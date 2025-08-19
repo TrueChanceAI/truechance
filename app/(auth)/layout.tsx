@@ -10,13 +10,17 @@ import { Providers } from "@/components/Providers";
 import { usePathname, useSearchParams } from "next/navigation";
 import { pageview } from "@/lib/gtag";
 
-export default function Layout({ children }: { children: ReactNode }) {
+interface AuthLayoutProps {
+  children: ReactNode;
+}
+
+const AuthLayout = ({ children }: AuthLayoutProps) => {
   return (
     <Providers>
       <LayoutContent>{children}</LayoutContent>
     </Providers>
   );
-}
+};
 
 function LayoutContent({ children }: { children: ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -308,7 +312,16 @@ function LayoutContent({ children }: { children: ReactNode }) {
         </nav>
       </div>
 
-      {children}
+      {/* Auth Card Wrapper */}
+      <div className="min-h-screen flex items-center justify-center px-4 py-8 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        <div className="w-full max-w-md">
+          <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-8">
+            {children}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
+
+export default AuthLayout;
