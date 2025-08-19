@@ -7,6 +7,8 @@ import { useLanguage } from "@/lib/hooks/useLanguage";
 import { UserMenu } from "@/components/UserMenu";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { Providers } from "@/components/Providers";
+import { usePathname, useSearchParams } from "next/navigation";
+import { pageview } from "@/lib/gtag";
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
@@ -20,6 +22,8 @@ function LayoutContent({ children }: { children: ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { t } = useLanguage();
   const { user } = useAuth();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -32,24 +36,33 @@ function LayoutContent({ children }: { children: ReactNode }) {
   // Handle ESC key press
   useEffect(() => {
     const handleEscKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isMobileMenuOpen) {
+      if (event.key === "Escape" && isMobileMenuOpen) {
         closeMobileMenu();
       }
     };
 
     if (isMobileMenuOpen) {
-      document.addEventListener('keydown', handleEscKey);
+      document.addEventListener("keydown", handleEscKey);
       // Prevent body scroll when menu is open
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscKey);
-      document.body.style.overflow = 'unset';
+      document.removeEventListener("keydown", handleEscKey);
+      document.body.style.overflow = "unset";
     };
   }, [isMobileMenuOpen]);
+
+  // Track page views on route changes
+  useEffect(() => {
+    if (!pathname) return;
+    const url = `${pathname}${
+      searchParams?.toString() ? `?${searchParams.toString()}` : ""
+    }`;
+    pageview(url);
+  }, [pathname, searchParams]);
 
   return (
     <div className="root-layout">
@@ -57,16 +70,19 @@ function LayoutContent({ children }: { children: ReactNode }) {
         {/* Logo and Brand */}
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <Link href="/" className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <Image 
-              src="/logo.svg" 
-              alt="PrepWithAhamed Logo" 
-              width={32} 
+            <Image
+              src="/logo.svg"
+              alt="PrepWithAhamed Logo"
+              width={32}
               height={28}
               className="w-8 h-7 sm:w-[38px] sm:h-[32px] flex-shrink-0"
             />
-            <span 
-              className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold tracking-tight text-white truncate sm:truncate-none" 
-              style={{ fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' }}
+            <span
+              className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold tracking-tight text-white truncate sm:truncate-none"
+              style={{
+                fontFamily:
+                  'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
+              }}
             >
               <span className="hidden sm:inline">TrueChance</span>
               <span className="sm:hidden">TrueChance</span>
@@ -76,8 +92,18 @@ function LayoutContent({ children }: { children: ReactNode }) {
 
         {/* Desktop Navigation */}
         <div className="hidden sm:flex gap-4 items-center">
-          <Link href="/" className="text-white hover:bg-gradient-to-br hover:from-purple-600 hover:to-blue-500 font-medium transition-all duration-200 px-4 py-2 rounded-lg">{t("navigation.home")}</Link>
-          <Link href="/about" className="text-white hover:bg-gradient-to-br hover:from-purple-600 hover:to-blue-500 font-medium transition-all duration-200 px-4 py-2 rounded-lg">{t("navigation.aboutUs")}</Link>
+          <Link
+            href="/"
+            className="text-white hover:bg-gradient-to-br hover:from-purple-600 hover:to-blue-500 font-medium transition-all duration-200 px-4 py-2 rounded-lg"
+          >
+            {t("navigation.home")}
+          </Link>
+          <Link
+            href="/about"
+            className="text-white hover:bg-gradient-to-br hover:from-purple-600 hover:to-blue-500 font-medium transition-all duration-200 px-4 py-2 rounded-lg"
+          >
+            {t("navigation.aboutUs")}
+          </Link>
           <LanguageDropdown />
           {user && <UserMenu />}
         </div>
@@ -121,16 +147,16 @@ function LayoutContent({ children }: { children: ReactNode }) {
 
       {/* Mobile Side Menu Overlay */}
       {isMobileMenuOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40 sm:hidden"
           onClick={closeMobileMenu}
         />
       )}
 
       {/* Mobile Side Menu */}
-      <div 
+      <div
         className={`fixed top-0 right-0 h-full w-64 bg-black bg-opacity-90 backdrop-blur-sm border-l border-zinc-800 shadow-xl z-50 transform transition-transform duration-300 ease-in-out sm:hidden ${
-          isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+          isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         {/* Menu Header */}
@@ -167,8 +193,18 @@ function LayoutContent({ children }: { children: ReactNode }) {
               onClick={closeMobileMenu}
             >
               <div className="flex items-center space-x-3">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                  />
                 </svg>
                 <span>{t("navigation.home")}</span>
               </div>
@@ -179,8 +215,18 @@ function LayoutContent({ children }: { children: ReactNode }) {
               onClick={closeMobileMenu}
             >
               <div className="flex items-center space-x-3">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
                 <span>{t("navigation.aboutUs")}</span>
               </div>

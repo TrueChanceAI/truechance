@@ -18,6 +18,7 @@ NEXT_PUBLIC_KINDE_CLIENT_ID=your_kinde_client_id_here
 NEXT_PUBLIC_KINDE_ISSUER_URL=https://your-domain.kinde.com
 NEXT_PUBLIC_KINDE_LOGOUT_URL=http://localhost:3000
 NEXT_PUBLIC_KINDE_REDIRECT_URL=http://localhost:3000
+NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXX
 ```
 
 ## 📝 Instructions:
@@ -39,6 +40,7 @@ NEXT_PUBLIC_KINDE_REDIRECT_URL=http://localhost:3000
 ## 🔍 Verification:
 
 After setting up, restart your development server and check:
+
 1. No more warnings about `NEXT_PUBLIC_` variables
 2. Vapi calls work through your secure API endpoints
 3. Sensitive tokens are not visible in browser dev tools
