@@ -8,11 +8,12 @@ import {
   getInterviewById,
 } from "@/lib/actions/general.action";
 import { Button } from "@/components/ui/button";
-import { getCurrentUser } from "@/lib/actions/auth.action";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/redux/store";
 
 const Feedback = async ({ params }: RouteParams) => {
   const { id } = await params;
-  const user = await getCurrentUser();
+  const user = useSelector((s: RootState) => s.me.user);
 
   const interview = await getInterviewById(id);
   const feedback = interview ? await getFeedbackByInterviewId({

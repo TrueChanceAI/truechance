@@ -1,3 +1,5 @@
+"use client";
+
 import ProviderRedux from "@/providers/ProviderRedux";
 import TanstackProvider from "@/providers/TanStackProvider";
 import React, { Suspense, useEffect } from "react";

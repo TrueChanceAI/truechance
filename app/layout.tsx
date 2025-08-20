@@ -4,6 +4,7 @@ import { Mona_Sans, Cairo, Inter } from "next/font/google";
 import Script from "next/script";
 
 import "./globals.css";
+import BaseLayout from "@/layouts/BaseLayout";
 
 const monaSans = Mona_Sans({
   variable: "--font-mona-sans",
@@ -65,7 +66,9 @@ export default function RootLayout({
       <body
         className={`${monaSans.className} ${cairo.variable} ${inter.variable} antialiased pattern`}
       >
-        {children}
+        <BaseLayout>
+          {children}
+        </BaseLayout>
         <Toaster />
       </body>
     </html>
