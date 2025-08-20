@@ -82,10 +82,11 @@ export async function POST(request: NextRequest) {
     const jwtSecret = process.env.JWT_SECRET || "";
 
     const payload = {
+      sub: user.id,
       id: user.id,
       email: user.email,
       name: `${user.first_name || ""} ${user.last_name || ""}`.trim(),
-    };
+    } as any;
     const token = jwt.sign(payload, jwtSecret, { expiresIn: "7d" });
 
     // Return user data (without sensitive information)

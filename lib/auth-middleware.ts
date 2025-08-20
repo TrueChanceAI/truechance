@@ -43,7 +43,7 @@ export async function authenticateUser(req: NextRequest): Promise<AuthResult> {
         const payload = jwt.verify(token, secret) as any;
         return {
           user: {
-            id: payload.sub || payload.kid || "unknown",
+            id: payload.sub || payload.id || payload.kid || "unknown",
             email: payload.email || payload.em || "unknown",
             name: payload.name || payload.given_name || undefined,
           },

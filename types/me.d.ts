@@ -1,3 +1,5 @@
+import { IAPIResponse } from "./api";
+
 export interface IUser {
   id: string;
   firstName: string;
@@ -6,3 +8,9 @@ export interface IUser {
   phoneNumber: string;
   isEmailVerified: boolean;
 }
+
+export interface IMeResponse extends IAPIResponse {
+  user: IUser;
+}
+
+export type TGetMeService = () => Promise<IMeResponse>;

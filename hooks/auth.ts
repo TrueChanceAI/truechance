@@ -20,6 +20,7 @@ import {
   signUpService,
   verifyOtpService,
 } from "@/services/auth";
+import { setToken } from "@/lib/token";
 
 export const useSignIn = () => {
   const router = useRouter();
@@ -27,7 +28,10 @@ export const useSignIn = () => {
 
   const onSuccess = (data: ISinginResponse) => {
     toast.success(data.message || "Login successful");
-    if (data?.token) dispatch(setSessionToken(data.token));
+    if (data?.token) {
+      dispatch(setSessionToken(data.token));
+      setToken(data.token);
+    }
     if (data?.user) dispatch(setMe(data.user as any));
     router.push("/");
   };

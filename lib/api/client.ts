@@ -1,6 +1,8 @@
 import axios from "axios";
 
 import { getToken, removeToken } from "@/lib/token";
+import { store } from "@/redux/store";
+import { resetMeState } from "@/redux/slices/meSlice";
 
 const clientApi = axios.create({
   baseURL: `${process.env.NEXT_PUBLIC_APP_URL}/api`,
@@ -11,7 +13,7 @@ clientApi.interceptors.request.use(
     const token = getToken();
 
     if (token) {
-      config.headers.Authorization = `bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
@@ -32,6 +34,8 @@ clientApi.interceptors.response.use(
     if (error?.response?.status === 401) {
       localStorage.clear();
       removeToken();
+      // Clear user state in Redux
+      store.dispatch(resetMeState());
     }
 
     return Promise.reject(error);
