@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
     // Generate OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    const { error } = await supabaseServer
+    const { data: insertedUser, error } = await supabaseServer
       .from("app_users")
       .insert({
         email,
@@ -116,6 +116,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         message: "OTP Sent to your email",
+        userId: insertedUser.id,
       },
       { status: 201 }
     );

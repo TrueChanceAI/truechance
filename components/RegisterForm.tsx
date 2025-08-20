@@ -12,6 +12,7 @@ import Link from "next/link";
 import { Eye } from "lucide-react";
 import { EyeOff } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useSignUp } from "@/hooks/auth";
 
 // Validation schema using Yup
 const RegisterValidationSchema = Yup.object().shape({
@@ -41,6 +42,15 @@ const RegisterValidationSchema = Yup.object().shape({
     .required("Please confirm your password"),
 });
 
+interface RegisterFormValues {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  password: string;
+  confirmPassword: string;
+}
+
 interface RegisterFormProps {
   onSuccess?: () => void;
   onModeChange?: () => void;
@@ -51,50 +61,37 @@ export default function RegisterForm({
   onModeChange,
 }: RegisterFormProps) {
   const { t } = useLanguage();
-  const [isLoading, setIsLoading] = useState(false);
+  const { signUp, isLoading, error } = useSignUp();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [generalError, setGeneralError] = useState<string>("");
 
   const handleSubmit = async (
-    values: any,
-    { setSubmitting, setFieldError }: any
+    values: RegisterFormValues,
+    { setSubmitting }: any
   ) => {
-    setIsLoading(true);
-
     try {
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          firstName: values.firstName,
-          lastName: values.lastName,
-          email: values.email,
-          phoneNumber: values.phoneNumber,
-          password: values.password,
-        }),
+      setGeneralError("");
+      const result = await signUp({
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        phoneNumber: values.phoneNumber,
+        password: values.password,
       });
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || "Registration failed");
+      // Store userId and email for OTP verification
+      if (typeof window !== "undefined") {
+        localStorage.setItem("email", values.email);
+        localStorage.setItem("userId", result.userId);
       }
 
-      toast.success(
-        "OTP sent to your email! Please check your inbox and enter the verification code."
-      );
-      // Don't reset form yet - user needs to enter OTP
-      // You might want to show an OTP input field here
       onSuccess?.();
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Registration failed";
-      setFieldError("general", errorMessage);
-      toast.error(errorMessage);
+      setGeneralError(errorMessage);
     } finally {
-      setIsLoading(false);
       setSubmitting(false);
     }
   };
@@ -384,13 +381,13 @@ export default function RegisterForm({
             </div>
 
             {/* General Error */}
-            <ErrorMessage name="general">
-              {(msg) => (
-                <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
-                  <p className="text-red-400 text-sm text-center">{msg}</p>
-                </div>
-              )}
-            </ErrorMessage>
+            {(error || generalError) && (
+              <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
+                <p className="text-red-400 text-sm text-center">
+                  {error?.message || generalError || "Registration failed"}
+                </p>
+              </div>
+            )}
 
             {/* Submit Button */}
             <Button

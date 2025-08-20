@@ -10,8 +10,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
-import { useDispatch } from "react-redux";
-import { setMe, setSessionToken } from "@/redux/slices/meSlice";
+import { useSignIn } from "@/hooks/auth";
 
 interface LoginFormValues {
   email: string;
@@ -20,38 +19,18 @@ interface LoginFormValues {
 
 const LoginForm = () => {
   const { t } = useLanguage();
-  const dispatch = useDispatch();
-  const [isLoading, setIsLoading] = useState(false);
+  const { signIn, isLoading, error } = useSignIn();
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (
     values: LoginFormValues,
     { setSubmitting, setFieldError }: any
   ) => {
-    setIsLoading(true);
-
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Login failed");
-      dispatch(
-        setMe({
-          id: data.user.id,
-          name: `${data.user.firstName} ${data.user.lastName}`.trim(),
-          email: data.user.email,
-          phoneNumber: data.user.phoneNumber,
-          isEmailVerified: data.user.isEmailVerified,
-        })
-      );
-      dispatch(setSessionToken(data.sessionToken));
+      await signIn(values);
     } catch (error) {
       setFieldError("general", "Login failed. Please try again.");
     } finally {
-      setIsLoading(false);
       setSubmitting(false);
     }
   };
@@ -173,13 +152,13 @@ const LoginForm = () => {
             </div>
 
             {/* General Error */}
-            <ErrorMessage name="general">
-              {(msg) => (
-                <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
-                  <p className="text-red-400 text-sm text-center">{msg}</p>
-                </div>
-              )}
-            </ErrorMessage>
+            {error && (
+              <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
+                <p className="text-red-400 text-sm text-center">
+                  {error?.message || "Login failed. Please try again."}
+                </p>
+              </div>
+            )}
 
             {/* Submit Button */}
             <Button

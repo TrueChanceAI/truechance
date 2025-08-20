@@ -1,16 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import OTPInput from "./OTPInput";
+import { useVerifyOtp, useResendOtp } from "@/hooks/auth";
 
 export default function OTPVerification() {
-  const email = localStorage.getItem("email") || "test@test.com";
-
   const [otp, setOtp] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [userId, setUserId] = useState("");
+
+  const { verifyOtp, isLoading: isVerifying } = useVerifyOtp();
+  const { resendOtp, isLoading: isResending } = useResendOtp();
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setEmail(localStorage.getItem("email") || "");
+      setUserId(localStorage.getItem("userId") || "");
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,36 +29,32 @@ export default function OTPVerification() {
       return;
     }
 
-    setIsLoading(true);
+    if (!userId) {
+      toast.error("User ID not found. Please try registering again.");
+      return;
+    }
+
     try {
-      const response = await fetch("/api/auth/verify-otp", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, otp }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || "OTP verification failed");
-      }
-
-      toast.success("Email verified successfully! You can now log in.");
-      // onSuccess();
+      await verifyOtp({ id: userId, otp });
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "OTP verification failed"
-      );
-    } finally {
-      setIsLoading(false);
+      // Error handling is done in the hook
     }
   };
 
   const onResend = async () => {
-    setIsLoading(true);
+    if (!userId) {
+      toast.error("User ID not found. Please try registering again.");
+      return;
+    }
+
+    try {
+      await resendOtp({ id: userId });
+    } catch (error) {
+      // Error handling is done in the hook
+    }
   };
+
+  const isLoading = isVerifying || isResending;
 
   return (
     <div className="space-y-6">
@@ -83,7 +89,7 @@ export default function OTPVerification() {
           className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3 rounded-lg transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
           disabled={isLoading || otp.length !== 6}
         >
-          {isLoading ? (
+          {isVerifying ? (
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               Verifying...
@@ -102,8 +108,9 @@ export default function OTPVerification() {
             type="button"
             onClick={onResend}
             className="text-purple-400 hover:text-purple-300 font-medium transition-colors"
+            disabled={isLoading}
           >
-            Resend
+            {isResending ? "Sending..." : "Resend"}
           </button>
         </div>
       </div>
