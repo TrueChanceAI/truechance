@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
-import { useLanguage } from "@/lib/hooks/useLanguage";
+import { useLanguage } from "@/hooks/useLanguage";
 import { useDispatch } from "react-redux";
 import { setMe, setSessionToken } from "@/redux/slices/meSlice";
 

@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { useLanguage } from "@/lib/hooks/useLanguage";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface LanguageOption {
   code: string;

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import React, { useRef } from "react";
 import { useEffect } from "react";
 import Cookies from "js-cookie";
-import { useLanguage } from "@/lib/hooks/useLanguage";
+import { useLanguage } from "@/hooks/useLanguage";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
 import { ProtectedRoute } from "@/components/ProtectedRoute";

@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useLanguage } from "@/lib/hooks/useLanguage";
+import { useLanguage } from "@/hooks/useLanguage";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
 import { AuthModal } from "@/components/AuthModal";
@@ -45,11 +45,6 @@ function HomeContent() {
     setTimeout(() => {
       router.push("/upload-resume");
     }, 600);
-  };
-
-  const handleAuthSuccess = () => {
-    // Continue with upload flow after successful authentication
-    startUploadFlow();
   };
 
   const handleAuthModalClose = () => {
@@ -112,7 +107,6 @@ function HomeContent() {
       <AuthModal
         isOpen={showAuthModal}
         onClose={handleAuthModalClose}
-        onSuccess={handleAuthSuccess}
         mode={authMode}
         onModeChange={setAuthMode}
       />

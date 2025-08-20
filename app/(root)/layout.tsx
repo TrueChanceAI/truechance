@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ReactNode, useState, useEffect } from "react";
 import LanguageDropdown from "@/components/LanguageDropdown";
-import { useLanguage } from "@/lib/hooks/useLanguage";
+import { useLanguage } from "@/hooks/useLanguage";
 import { UserMenu } from "@/components/UserMenu";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";

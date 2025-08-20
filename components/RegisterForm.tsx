@@ -6,13 +6,12 @@ import * as Yup from "yup";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { UserRegistration } from "@/types/auth";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { Eye } from "lucide-react";
 import { EyeOff } from "lucide-react";
-import { useLanguage } from "@/lib/hooks/useLanguage";
+import { useLanguage } from "@/hooks/useLanguage";
 
 // Validation schema using Yup
 const RegisterValidationSchema = Yup.object().shape({

@@ -12,7 +12,7 @@ import { createFeedback } from "@/lib/actions/general.action";
 import { map } from "zod";
 import dayjs from "dayjs";
 import { CreateAssistantDTO } from "@vapi-ai/web/dist/api";
-import { useLanguage } from "@/lib/hooks/useLanguage";
+import { useLanguage } from "@/hooks/useLanguage";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
 

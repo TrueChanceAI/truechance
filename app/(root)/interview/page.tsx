@@ -3,7 +3,7 @@ import Agent from "@/components/Agent";
 import { useEffect, useState } from "react";
 import { getInterviewerConfig } from "@/constants";
 import Cookies from "js-cookie";
-import { useLanguage } from "@/lib/hooks/useLanguage";
+import { useLanguage } from "@/hooks/useLanguage";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";

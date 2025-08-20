@@ -5,7 +5,7 @@ import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "@/redux/store";
 import { resetMeState, setSessionToken } from "@/redux/slices/meSlice";
 import { useRouter } from "next/navigation";
-import { useLanguage } from "@/lib/hooks/useLanguage";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export function UserMenu() {
   const [isOpen, setIsOpen] = useState(false);

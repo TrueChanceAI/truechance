@@ -1,38 +1,24 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {} from "react";
-import type { AuthModalProps } from "@/types/auth";
-import { useLanguage } from "@/lib/hooks/useLanguage";
-import { useDispatch } from "react-redux";
-import { setMe, setSessionToken } from "@/redux/slices/meSlice";
+import { useLanguage } from "@/hooks/useLanguage";
+import { useRouter } from "next/navigation";
 
-export function AuthModal({
-  isOpen,
-  onClose,
-  onSuccess,
-  mode,
-  onModeChange,
-}: AuthModalProps) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const { t, currentLang } = useLanguage();
-  const dispatch = useDispatch();
+export interface IProps {
+  isOpen: boolean;
+  onClose: () => void;
+  mode: "signin" | "signup";
+  onModeChange?: (mode: "signin" | "signup") => void;
+}
 
-  console.log("AuthModal rendered with:", { isOpen, mode, email, password });
+export function AuthModal({ isOpen, onClose, mode, onModeChange }: IProps) {
+  const { t } = useLanguage();
+  const router = useRouter();
 
   if (!isOpen) return null;
 
   const toggleMode = () => {
-    setError("");
-    setEmail("");
-    setPassword("");
-
     // Call the parent callback to change mode
     if (onModeChange) {
       const newMode = mode === "signin" ? "signup" : "signin";
@@ -73,92 +59,19 @@ export function AuthModal({
           </p>
         </div>
 
-        {error && (
-          <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
-            <p className="text-red-400 text-sm">{error}</p>
-          </div>
-        )}
-
-        <form
-          onSubmit={async (e) => {
-            e.preventDefault();
-            setIsLoading(true);
-            setError("");
-            try {
-              if (mode === "signup") {
-                const res = await fetch("/api/auth/register", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    email,
-                    password,
-                    firstName: "",
-                    lastName: "",
-                  }),
-                });
-                const data = await res.json();
-                if (!res.ok)
-                  throw new Error(data.error || "Registration failed");
-                onSuccess?.();
-              } else {
-                const res = await fetch("/api/auth/login", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ email, password }),
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.error || "Login failed");
-                dispatch(
-                  setMe({
-                    id: data.user.id,
-                    name: `${data.user.firstName} ${data.user.lastName}`.trim(),
-                    email: data.user.email,
-                    phoneNumber: data.user.phoneNumber,
-                    isEmailVerified: data.user.isEmailVerified,
-                  })
-                );
-                dispatch(setSessionToken(data.sessionToken));
-                onSuccess?.();
-                onClose();
-              }
-            } catch (e: any) {
-              setError(e.message || "Authentication failed");
-            } finally {
-              setIsLoading(false);
-            }
-          }}
-          className="space-y-4"
-        >
-          <div className="space-y-2">
-            <Label className="text-white font-medium">
-              {t("auth.emailAddress")}
-            </Label>
-            <Input
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              type="email"
-              className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label className="text-white font-medium">
-              {t("auth.password")}
-            </Label>
-            <Input
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              type="password"
-              className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-            />
-          </div>
+        <div className="flex justify-center">
           <Button
-            disabled={isLoading}
-            type="submit"
-            className="w-full bg-gradient-to-br from-purple-600 to-blue-500"
+            type="button"
+            onClick={() => {
+              const href = mode === "signup" ? "/signup" : "/signin";
+              onClose();
+              router.push(href);
+            }}
+            className="w-full max-w-xs bg-gradient-to-br from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white font-medium py-3 px-6 rounded-lg text-center transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
           >
             {mode === "signup" ? t("auth.createAccount") : t("auth.signIn")}
           </Button>
-        </form>
+        </div>
 
         <div className="text-center text-sm">
           <span className="text-zinc-400">

@@ -3,7 +3,7 @@
 import { useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { useLanguage } from "@/lib/hooks/useLanguage";
+import { useLanguage } from "@/hooks/useLanguage";
 
 function ProfileContent() {
   const user = useSelector((s: RootState) => s.me.user);
