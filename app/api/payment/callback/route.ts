@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
       );
       // Redirect based on existing status
       const redirectUrl =
-        payment_order.status === "SETTLED"
+        payment_order.status === "settled"
           ? "/upload-resume"
           : "/payment-failed";
       return NextResponse.redirect(new URL(redirectUrl, req.url));
@@ -70,47 +70,57 @@ export async function GET(req: NextRequest) {
 
           // Validate payment amount and currency
           if (orderAmount && orderCurrency) {
-            const expectedAmount = payment_order.amount.toString();
-            if (orderAmount !== expectedAmount || orderCurrency !== "SAR") {
+            // Convert both amounts to numbers for proper comparison
+            const expectedAmount = parseFloat(payment_order.amount.toString());
+            const receivedAmount = parseFloat(orderAmount);
+
+            console.log(
+              `Amount comparison: Expected: ${expectedAmount} ${orderCurrency}, Got: ${receivedAmount} ${orderCurrency}`
+            );
+
+            if (
+              Math.abs(receivedAmount - expectedAmount) > 0.01 ||
+              orderCurrency !== "SAR"
+            ) {
               console.error(
-                `Payment amount/currency mismatch. Expected: ${expectedAmount} SAR, Got: ${orderAmount} ${orderCurrency}`
+                `Payment amount/currency mismatch. Expected: ${expectedAmount} SAR, Got: ${receivedAmount} ${orderCurrency}`
               );
-              paymentStatus = "AMOUNT_MISMATCH";
+              paymentStatus = "declined"; // Use valid database status instead of AMOUNT_MISMATCH
               redirectUrl = "/payment-failed";
-            } else if (status === "SETTLED") {
-              paymentStatus = "SETTLED";
+            } else if (status === "settled") {
+              paymentStatus = "settled";
               redirectUrl = "/upload-resume";
-            } else if (status === "DECLINED") {
-              paymentStatus = "DECLINED";
+            } else if (status === "declined") {
+              paymentStatus = "declined";
               redirectUrl = "/payment-failed";
-            } else if (status === "3DS") {
-              paymentStatus = "3DS";
+            } else if (status === "3ds") {
+              paymentStatus = "3ds";
               redirectUrl = "/payment-failed";
-            } else if (status === "REDIRECT") {
-              paymentStatus = "REDIRECT";
+            } else if (status === "redirect") {
+              paymentStatus = "redirect";
               redirectUrl = "/payment-failed";
-            } else if (status === "REFUND") {
-              paymentStatus = "REFUND";
+            } else if (status === "refund") {
+              paymentStatus = "refund";
               redirectUrl = "/payment-failed";
             } else {
               // Unknown status, treat as failed
-              paymentStatus = status || "unknown";
+              paymentStatus = "declined"; // Use valid database status
               redirectUrl = "/payment-failed";
             }
           } else {
             console.error(
               "Payment response missing amount or currency information"
             );
-            paymentStatus = "INVALID_RESPONSE";
+            paymentStatus = "declined"; // Use valid database status instead of INVALID_RESPONSE
             redirectUrl = "/payment-failed";
           }
         } else {
           // Fallback: try to extract status from message
-          if (response.message && response.message.includes("SETTLED")) {
-            paymentStatus = "SETTLED";
+          if (response.message && response.message.includes("settled")) {
+            paymentStatus = "settled";
             redirectUrl = "/upload-resume";
           } else {
-            paymentStatus = "unknown";
+            paymentStatus = "declined"; // Use valid database status
             redirectUrl = "/payment-failed";
           }
         }

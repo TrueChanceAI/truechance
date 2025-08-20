@@ -35,6 +35,9 @@ function InterviewProtectedRoute({ children }: { children: React.ReactNode }) {
       const storedEmail = sessionStorage.getItem("resumeEmail");
       const storedResumeFile = sessionStorage.getItem("resumeFileContent");
 
+      // Check for payment verification
+      const currentPaymentId = sessionStorage.getItem("currentPaymentId");
+
       console.log("Token validation:", {
         cookieToken: !!cookieToken,
         sessionToken: !!sessionToken,
@@ -43,24 +46,29 @@ function InterviewProtectedRoute({ children }: { children: React.ReactNode }) {
         hasName: !!storedName,
         hasEmail: !!storedEmail,
         hasResumeFile: !!storedResumeFile,
+        hasPaymentId: !!currentPaymentId,
       });
 
       console.log("SessionStorage contents:", {
         resumeEmail: storedEmail,
         candidateName: storedName,
         resumeFileLength: storedResumeFile ? storedResumeFile.length : 0,
+        paymentId: currentPaymentId,
       });
 
-      // Must have both valid token AND resume data
+      // Must have both valid token AND resume data AND payment verification
       if (
         !cookieToken ||
         !sessionToken ||
         !storedQuestions ||
         !storedLanguage ||
-        !storedName
+        !storedName ||
+        !currentPaymentId
       ) {
-        console.log("Missing required data, redirecting to upload-resume");
-        // Missing token or resume data, redirect immediately
+        console.log(
+          "Missing required data or payment verification, redirecting to upload-resume"
+        );
+        // Missing token, resume data, or payment verification, redirect immediately
         router.push("/upload-resume");
         return;
       }

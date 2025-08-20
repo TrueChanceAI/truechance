@@ -42,8 +42,6 @@ export async function POST(req: NextRequest) {
     const ip = req.headers.get("x-forwarded-for");
     const description = `Interview payment for ${interviewId}`;
 
-    console.log(ip);
-
     if (!ip) {
       return NextResponse.json(
         { error: "IP address not found" },

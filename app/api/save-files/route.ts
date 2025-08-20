@@ -1,15 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from '@supabase/supabase-js';
 import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
-import { validateEmail, validateName, validateLanguage, validateResumeText, createRateLimiter } from "@/lib/validation";
-import { requireAuth, requireOwnership, createUnauthorizedResponse, createForbiddenResponse } from "@/lib/auth-middleware";
+import {
+  validateEmail,
+  validateName,
+  validateLanguage,
+  validateResumeText,
+  createRateLimiter,
+} from "@/lib/validation";
+import {
+  requireAuth,
+  requireOwnership,
+  createUnauthorizedResponse,
+  createForbiddenResponse,
+} from "@/lib/auth-middleware";
+import { supabaseServer } from "@/lib/supabase-server";
 
 // Rate limiter: 30 requests per 15 minutes per IP
 const rateLimiter = createRateLimiter(30, 15 * 60 * 1000);
 
 // Function to extract skills from resume text using Gemini
-async function extractSkillsFromResume(resumeText: string): Promise<string | null> {
+async function extractSkillsFromResume(
+  resumeText: string
+): Promise<string | null> {
   try {
     const prompt = `Extract all technical skills, programming languages, tools, frameworks, and technologies from this resume text. 
     
@@ -29,11 +42,11 @@ async function extractSkillsFromResume(resumeText: string): Promise<string | nul
       model: google("gemini-2.0-flash-001"),
       prompt,
     });
-    
+
     console.log("✅ Skills extracted:", skills);
     return skills.trim();
   } catch (error) {
-    console.error('❌ Error extracting skills:', error);
+    console.error("❌ Error extracting skills:", error);
     return null;
   }
 }
@@ -43,11 +56,27 @@ export async function POST(req: NextRequest) {
     // Authentication check
     const authResult = await requireAuth(req);
     if (!authResult.user) {
-      return createUnauthorizedResponse(authResult.error || "Authentication required");
+      console.error("❌ Authentication failed:", {
+        error: authResult.error,
+        status: authResult.status,
+        headers: Object.fromEntries(req.headers.entries()),
+      });
+      return createUnauthorizedResponse(
+        authResult.error || "Authentication required"
+      );
     }
-    
+
+    console.log("✅ Authentication successful:", {
+      userId: authResult.user.id,
+      userEmail: authResult.user.email,
+      userName: authResult.user.name,
+    });
+
     // Rate limiting
-    const clientIP = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+    const clientIP =
+      req.headers.get("x-forwarded-for") ||
+      req.headers.get("x-real-ip") ||
+      "unknown";
     if (!rateLimiter(clientIP)) {
       return NextResponse.json(
         { error: "Too many requests. Please try again later." },
@@ -57,58 +86,80 @@ export async function POST(req: NextRequest) {
 
     // Validate request body
     if (!req.body) {
-      return NextResponse.json({ error: "Request body is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Request body is required" },
+        { status: 400 }
+      );
     }
 
-    const { 
-      email,
-      resumeFile,
-      resumeFileName,
-      resumeFileType,
-      resumeText,
-      candidateName,
-      language,
-      authenticatedUserEmail
-    } = await req.json();
+    const userId = authResult.user.id;
+    if (!userId || userId === "unknown") {
+      return createUnauthorizedResponse("Invalid token subject");
+    }
 
-    // Debug: Log authentication details
-    console.log("🔐 Authentication details:", {
-      jwtUserEmail: authResult.user.email,
-      requestEmail: email,
-      authenticatedUserEmail: authenticatedUserEmail,
-      emailsMatch: authenticatedUserEmail === email
-    });
+    const { data: user, error: userError } = await supabaseServer
+      .from("app_users")
+      .select(
+        "id, first_name, last_name, email, phone_number, is_email_verified"
+      )
+      .eq("id", userId)
+      .maybeSingle();
 
-    // Verify user owns this resource (can only save data for their own email)
-    if (!requireOwnership(authenticatedUserEmail, email)) {
-      console.log("❌ Ownership check failed:", {
-        userEmail: authenticatedUserEmail,
-        requestEmail: email
+    if (userError) {
+      console.error("❌ User fetch error:", {
+        error: userError,
+        userId: userId,
+        message: userError.message,
+        code: userError.code,
+        details: userError.details,
       });
-      return createForbiddenResponse("You can only save data for your own email address");
+      return NextResponse.json(
+        { error: "Failed to fetch user profile" },
+        { status: 500 }
+      );
     }
 
-    // Debug: Log what we received
-    console.log("🔍 Raw data received:", {
-      email: email ? `${email.substring(0, 10)}...` : 'undefined',
-      candidateName: candidateName ? `${candidateName.substring(0, 20)}...` : 'undefined',
-      language: language,
-      resumeText: resumeText ? `${resumeText.substring(0, 50)}...` : 'undefined',
-      resumeTextLength: resumeText ? resumeText.length : 0
+    if (!user) {
+      console.error("❌ User not found:", {
+        userId: userId,
+        searchedId: userId,
+      });
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    console.log("✅ User fetched successfully:", {
+      userId: user.id,
+      firstName: user.first_name,
+      lastName: user.last_name,
+      email: user.email,
     });
+
+    const { resumeFile, resumeFileName, resumeFileType, resumeText, language } =
+      await req.json();
 
     // Validate all inputs
-    const emailValidation = validateEmail(email);
-    const nameValidation = validateName(candidateName);
+    const emailValidation = validateEmail(user.email);
+    const nameValidation = validateName(user.first_name + " " + user.last_name);
     const languageValidation = validateLanguage(language);
-    const resumeTextValidation = resumeText ? validateResumeText(resumeText) : { isValid: true, errors: [], sanitizedData: resumeText };
+    const resumeTextValidation = resumeText
+      ? validateResumeText(resumeText)
+      : { isValid: true, errors: [], sanitizedData: resumeText };
 
     // Debug: Log validation results
     console.log("🔍 Validation results:", {
-      email: { isValid: emailValidation.isValid, errors: emailValidation.errors },
+      email: {
+        isValid: emailValidation.isValid,
+        errors: emailValidation.errors,
+      },
       name: { isValid: nameValidation.isValid, errors: nameValidation.errors },
-      language: { isValid: languageValidation.isValid, errors: languageValidation.errors },
-      resumeText: { isValid: resumeTextValidation.isValid, errors: resumeTextValidation.errors }
+      language: {
+        isValid: languageValidation.isValid,
+        errors: languageValidation.errors,
+      },
+      resumeText: {
+        isValid: resumeTextValidation.isValid,
+        errors: resumeTextValidation.errors,
+      },
     });
 
     // Check for validation errors
@@ -116,7 +167,7 @@ export async function POST(req: NextRequest) {
       ...emailValidation.errors,
       ...nameValidation.errors,
       ...languageValidation.errors,
-      ...resumeTextValidation.errors
+      ...resumeTextValidation.errors,
     ];
 
     if (allErrors.length > 0) {
@@ -132,7 +183,7 @@ export async function POST(req: NextRequest) {
     const sanitizedName = nameValidation.sanitizedData;
     const sanitizedLanguage = languageValidation.sanitizedData;
     const sanitizedResumeText = resumeTextValidation.sanitizedData;
-    
+
     console.log("📊 Received validated data for Supabase:", {
       email: sanitizedEmail ? "Present" : "Missing",
       hasResume: !!resumeFile,
@@ -141,84 +192,100 @@ export async function POST(req: NextRequest) {
       fileSize: resumeFile ? Math.round(resumeFile.length * 0.75) : 0,
       hasResumeText: !!sanitizedResumeText,
       candidateName: sanitizedName,
-      language: sanitizedLanguage
+      language: sanitizedLanguage,
     });
-    
-    // Initialize Supabase client
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-    
+
     // Upload resume file to Supabase storage bucket
     let resumeFilePath = null;
     let signedUrl = null;
     if (resumeFile) {
       try {
         // Validate base64 string
-        if (typeof resumeFile !== 'string' || resumeFile.length < 100) {
+        if (typeof resumeFile !== "string" || resumeFile.length < 100) {
           throw new Error("Invalid or too small base64 file data");
         }
-        
+
         // Convert base64 string to buffer
-        const buffer = Buffer.from(resumeFile, 'base64');
-        
+        const buffer = Buffer.from(resumeFile, "base64");
+
         // Validate buffer size (should be at least 1KB for a resume)
         if (buffer.length < 1024) {
           throw new Error(`File too small: ${buffer.length} bytes`);
         }
-        
+
         console.log("📁 File upload details:", {
           originalName: resumeFileName,
           contentType: resumeFileType,
           bufferSize: buffer.length,
-          base64Length: resumeFile.length
+          base64Length: resumeFile.length,
         });
-        
+
         // Generate unique filename with original extension
-        const fileExtension = resumeFileName ? resumeFileName.split('.').pop() : 'pdf';
-        const uniqueFileName = `resume_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExtension}`;
+        const fileExtension = resumeFileName
+          ? resumeFileName.split(".").pop()
+          : "pdf";
+        const uniqueFileName = `resume_${Date.now()}_${Math.random()
+          .toString(36)
+          .substring(7)}.${fileExtension}`;
 
         // Upload to Supabase storage
-        const { error: uploadError } = await supabase
-          .storage
-          .from('cvs')
+        const { error: uploadError } = await supabaseServer.storage
+          .from("cvs")
           .upload(uniqueFileName, buffer, {
-            contentType: resumeFileType || 'application/pdf',
-            upsert: true
+            contentType: resumeFileType || "application/pdf",
+            upsert: true,
           });
 
         if (uploadError) {
+          console.error("❌ Storage upload error details:", {
+            error: uploadError,
+            message: uploadError.message,
+            name: uploadError.name,
+          });
+
+          // Check if it's an RLS policy error
+          if (uploadError.message?.includes("row-level security policy")) {
+            throw new Error(
+              `Storage access denied: ${uploadError.message}. Please check your storage bucket permissions.`
+            );
+          }
+
           throw uploadError;
         }
 
         // Store the file path and generate direct signed URL
         resumeFilePath = uniqueFileName;
-        
+
         // Generate a direct signed URL for immediate access
-        const { data: signedUrlData, error: signedUrlError } = await supabase
-          .storage
-          .from('cvs')
-          .createSignedUrl(uniqueFileName, 3600); // 1 hour expiry
-        
+        const { data: signedUrlData, error: signedUrlError } =
+          await supabaseServer.storage
+            .from("cvs")
+            .createSignedUrl(uniqueFileName, 3600); // 1 hour expiry
+
         if (signedUrlError) {
-          console.error("❌ Error generating initial signed URL:", signedUrlError);
+          console.error(
+            "❌ Error generating initial signed URL:",
+            signedUrlError
+          );
         } else {
-          console.log("✅ Initial signed URL generated:", signedUrlData.signedUrl);
+          console.log(
+            "✅ Initial signed URL generated:",
+            signedUrlData.signedUrl
+          );
           signedUrl = signedUrlData.signedUrl;
         }
-        
+
         console.log("✅ Resume file uploaded successfully:", {
           fileName: uniqueFileName,
           size: buffer.length,
           path: resumeFilePath,
-          signedUrl: signedUrl || "Failed to generate"
+          signedUrl: signedUrl || "Failed to generate",
         });
       } catch (uploadError) {
         console.error("❌ Error uploading resume file:", uploadError);
       }
     }
-    
+
     // Extract skills from resume text
     let extractedSkills = null;
     if (resumeText) {
@@ -230,85 +297,98 @@ export async function POST(req: NextRequest) {
         console.error("❌ Error extracting skills:", skillsError);
       }
     }
-    
-    // Make request to Supabase using fetch (Edge-safe approach)
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-    
+
     // For now, use localhost for development. In production, set NEXT_PUBLIC_APP_URL
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
     const supabaseData: any = {
-      interview_id: `initial_${Date.now()}_${Math.random().toString(36).substring(7)}`,
-      user_id: 'anonymous',
-      candidate_name: sanitizedName || 'Unknown',
-      duration: 'N/A',
-      language: sanitizedLanguage || 'en',
-      transcript: 'Interview not started',
-      feedback: 'Interview not conducted',
+      user_id: userId, // Use the authenticated user's ID instead of "anonymous"
+      candidate_name: sanitizedName || "Unknown",
+      duration: "N/A",
+      language: sanitizedLanguage || "en",
+      transcript: "Interview not started",
+      feedback: "Interview conducted",
       tone: null,
-      "Email": sanitizedEmail,
+      Email: sanitizedEmail,
       // Ensure clean URL concatenation without double slashes
-              "CV/Resume": resumeFilePath ? `${appUrl.replace(/\/$/, '')}/api/cv-preview?file=${encodeURIComponent(resumeFilePath)}` : null,
-      conducted_interview: 'not_conducted' // Add the flag column
+      "CV/Resume": resumeFilePath
+        ? `${appUrl.replace(
+            /\/$/,
+            ""
+          )}/api/cv-preview?file=${encodeURIComponent(resumeFilePath)}`
+        : null,
+      conducted_interview: "not_conducted", // Add the flag column
     };
-    
+
     // Add skills as text
     if (extractedSkills) {
       supabaseData.skills = extractedSkills;
       console.log("✅ Skills text added to Supabase data");
     }
-    
+
     console.log("📊 Final Supabase data structure:", {
       hasSkillsText: !!supabaseData.skills,
       skillsTextType: typeof supabaseData.skills,
       resumeUrl: supabaseData["CV/Resume"] || "None",
       conductedInterview: supabaseData.conducted_interview,
-      note: "Initial data saved - interview not yet conducted"
+      note: "Initial data saved - interview not yet conducted",
     });
-    
+
     // Log the exact data being sent
-    console.log("📤 Sending to Supabase:", JSON.stringify(supabaseData, null, 2));
-    
-    const response = await fetch(`${supabaseUrl}/rest/v1/interviews`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${supabaseKey}`,
-        'apikey': supabaseKey,
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify(supabaseData)
-    });
-    
-    if (response.ok) {
+    console.log(
+      "📤 Sending to Supabase:",
+      JSON.stringify(supabaseData, null, 2)
+    );
+
+    const { error } = await supabaseServer
+      .from("interviews")
+      .insert(supabaseData);
+
+    if (error) {
+      console.error("❌ Database insertion error details:", {
+        error: error,
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+      });
+
+      // Check if it's an RLS policy error
+      if (error.message?.includes("row-level security policy")) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Database access denied: ${error.message}. Please check your RLS policies.`,
+            details:
+              "The user may not have permission to insert into the interviews table.",
+          },
+          { status: 403 }
+        );
+      }
+
+      return NextResponse.json(
+        {
+          success: false,
+          error: error instanceof Error ? error.message : "Unknown error",
+        },
+        { status: 500 }
+      );
+    } else {
       console.log("✅ Initial data saved to Supabase successfully");
       // Return the interview_id so the frontend can store it
-      return NextResponse.json({ 
-        success: true, 
-        interview_id: supabaseData.interview_id 
+      return NextResponse.json({
+        success: true,
+        interview_id: supabaseData.interview_id,
       });
-    } else {
-      let errorData = "Unknown error";
-      try {
-        errorData = await response.text();
-        console.error("❌ Supabase error response:", errorData);
-      } catch (parseError) {
-        console.error("❌ Could not parse error response:", parseError);
-        errorData = `Status: ${response.status}, StatusText: ${response.statusText}`;
-      }
-      
-      return NextResponse.json({ 
-        success: false, 
-        error: `Supabase error: ${response.status} - ${errorData}` 
-      }, { status: 500 });
     }
-    
   } catch (error) {
     console.error("❌ Error saving initial data:", error);
-    return NextResponse.json({ 
-      success: false, 
-      error: error instanceof Error ? error.message : "Unknown error" 
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
   }
-} 
+}

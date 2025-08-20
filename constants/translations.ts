@@ -155,6 +155,28 @@ export interface Translations {
       supportNote: string;
       nextStepsList: string[];
     };
+    form: {
+      title: string;
+      subtitle: string;
+      addressLabel: string;
+      cityLabel: string;
+      countryLabel: string;
+      zipLabel: string;
+      addressPlaceholder: string;
+      cityPlaceholder: string;
+      countryPlaceholder: string;
+      zipPlaceholder: string;
+      submitButton: string;
+      processingText: string;
+      securityNote: string;
+    };
+    success: {
+      title: string;
+      subtitle: string;
+      startButton: string;
+      startingText: string;
+      closeButton: string;
+    };
   };
 }
 
@@ -346,6 +368,28 @@ export const translations: Record<string, Translations> = {
           "Verify your card details are correct",
         ],
       },
+      form: {
+        title: "Payment Details",
+        subtitle: "Enter your payment details to complete your purchase.",
+        addressLabel: "Address",
+        cityLabel: "City",
+        countryLabel: "Country",
+        zipLabel: "ZIP Code",
+        addressPlaceholder: "Enter your address",
+        cityPlaceholder: "Enter your city",
+        countryPlaceholder: "Enter your country",
+        zipPlaceholder: "Enter your ZIP code",
+        submitButton: "Submit Payment",
+        processingText: "Processing payment...",
+        securityNote: "Your payment details are encrypted and secure.",
+      },
+      success: {
+        title: "Payment Successful!",
+        subtitle: "Your payment has been processed.",
+        startButton: "Start Interview",
+        startingText: "Starting your interview...",
+        closeButton: "Close",
+      },
     },
   },
   ar: {
@@ -533,6 +577,28 @@ export const translations: Record<string, Translations> = {
           "تأكد من وجود رصيد كافٍ في حسابك",
           "تأكد من صحة تفاصيل بطاقتك",
         ],
+      },
+      form: {
+        title: "تفاصيل الدفع",
+        subtitle: "أدخل تفاصيل دفعتك لإكمال الشراء.",
+        addressLabel: "العنوان",
+        cityLabel: "المدينة",
+        countryLabel: "البلد",
+        zipLabel: "الرمز البريدي",
+        addressPlaceholder: "أدخل عنوانك",
+        cityPlaceholder: "أدخل المدينة",
+        countryPlaceholder: "أدخل البلد",
+        zipPlaceholder: "أدخل الرمز البريدي",
+        submitButton: "إرسال الدفع",
+        processingText: "جاري معالجة الدفع...",
+        securityNote: "تفاصيل دفعتك مشفرة وآمنة.",
+      },
+      success: {
+        title: "تم الدفع بنجاح!",
+        subtitle: "تم معالجة دفعتك.",
+        startButton: "ابدأ المقابلة",
+        startingText: "جاري بدء مقابلتك...",
+        closeButton: "إغلاق",
       },
     },
   },

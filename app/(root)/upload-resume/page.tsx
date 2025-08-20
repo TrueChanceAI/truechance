@@ -8,6 +8,8 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import PaymentForm from "@/components/PaymentForm";
+import PaymentSuccessModal from "@/components/PaymentSuccessModal";
 
 const LANGUAGES = [
   { code: "en", labelEn: "English", labelAr: "الإنجليزية" },
@@ -24,7 +26,6 @@ function UploadResumeContent() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showProgress, setShowProgress] = useState(false);
   const [progressStep, setProgressStep] = useState(0);
-  const [showStartCard, setShowStartCard] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [email, setEmail] = useState("");
   const [candidateName, setCandidateName] = useState("");
@@ -33,8 +34,13 @@ function UploadResumeContent() {
   const user = useSelector((s: RootState) => s.me.user);
   const sessionToken = useSelector((s: RootState) => s.me.sessionToken);
 
+  // New payment-related states
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [currentPaymentId, setCurrentPaymentId] = useState("");
+  const [questions, setQuestions] = useState<string[]>([]);
+
   const progressSteps = t("upload.progressSteps");
-  const [loadingStartInterview, setLoadingStartInterview] = useState(false);
 
   // Initialize email with user's email when component loads
   useEffect(() => {
@@ -42,6 +48,16 @@ function UploadResumeContent() {
       setEmail(user.email);
     }
   }, [user?.email]);
+
+  // Check for payment success redirect
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const paymentId = urlParams.get("paymentId");
+    if (paymentId) {
+      setCurrentPaymentId(paymentId);
+      setShowSuccessModal(true);
+    }
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -178,6 +194,7 @@ function UploadResumeContent() {
       const data = await questionRes.json();
       console.log("Questions received:", data.questions);
       if (data.questions) {
+        setQuestions(data.questions); // Store questions in state
         sessionStorage.setItem(
           "interviewQuestions",
           JSON.stringify(data.questions)
@@ -269,66 +286,47 @@ function UploadResumeContent() {
     }
 
     setShowProgress(false);
-    setShowStartCard(true);
-  };
+    // Show payment form directly instead of the start interview modal
+    setShowPaymentForm(true);
 
-  const handleStartInterview = async () => {
-    setLoadingStartInterview(true);
-    const token =
-      typeof crypto !== "undefined" && crypto.randomUUID
-        ? crypto.randomUUID()
-        : Math.random().toString(36).slice(2);
+    // Store interview data in session storage for the payment flow
+    const interviewToken = Math.random().toString(36).substring(2);
+    Cookies.set("interviewToken", interviewToken, { expires: 1 });
+    sessionStorage.setItem("interviewToken", interviewToken);
 
-    // Debug: Log what we're storing in sessionStorage
-    console.log("🔍 Storing in sessionStorage:", {
-      email: email,
-      candidateName: candidateName,
-      resumeTextLength: resumeText ? resumeText.length : 0,
-    });
-
-    // Store all required data in sessionStorage for the interview page
-    sessionStorage.setItem("interviewToken", token);
+    // Store other required data
+    sessionStorage.setItem("interviewQuestions", JSON.stringify(questions));
     sessionStorage.setItem("interviewLanguage", language);
     sessionStorage.setItem("candidateName", candidateName);
-    sessionStorage.setItem("resumeEmail", email); // Store email from the form
-    sessionStorage.setItem("extractedCandidateName", candidateName); // Store the extracted name for consistency
+    sessionStorage.setItem("resumeEmail", email);
+    sessionStorage.setItem("resumeFileContent", resumeText);
 
-    // Store resume file content for interview completion
-    if (file) {
-      try {
-        const fileData = await new Promise<string>((resolve, reject) => {
-          const fileReader = new FileReader();
-          fileReader.onload = () => resolve(fileReader.result as string);
-          fileReader.onerror = reject;
-          fileReader.readAsDataURL(file);
-        });
+    // Generate a unique interview ID
+    const interviewId = `interview_${Date.now()}_${Math.random()
+      .toString(36)
+      .substring(2)}`;
+    sessionStorage.setItem("currentInterviewId", interviewId);
+  };
 
-        const base64Data = fileData.split(",")[1];
-        sessionStorage.setItem("resumeFileContent", base64Data);
-        sessionStorage.setItem("resumeFileName", file.name);
-        sessionStorage.setItem("resumeFileType", file.type);
-        sessionStorage.setItem("resumeText", resumeText); // Use resumeText from component state
-        console.log("✅ Resume data stored in sessionStorage for interview");
-      } catch (error) {
-        console.error(
-          "❌ Failed to store resume data in sessionStorage:",
-          error
-        );
-      }
-    }
+  // Handle payment success
+  const handlePaymentSuccess = (paymentId: string) => {
+    setCurrentPaymentId(paymentId);
+    setShowPaymentForm(false);
+    setShowSuccessModal(true);
+  };
 
-    // Also store in cookies for the interview page validation
-    Cookies.set("interviewToken", token, { path: "/", sameSite: "strict" });
+  // Handle payment error
+  const handlePaymentError = (error: string) => {
+    setError(error);
+    // Don't close the payment form modal on error
+    // setShowPaymentForm(false); // Removed this line
+  };
 
-    // Small delay to ensure sessionStorage is set before redirecting
-    setTimeout(() => {
-      console.log("🔍 Final sessionStorage check before redirect:", {
-        resumeEmail: sessionStorage.getItem("resumeEmail"),
-        candidateName: sessionStorage.getItem("candidateName"),
-        hasResumeFile: !!sessionStorage.getItem("resumeFileContent"),
-      });
-      router.push(`/interview?token=${token}`);
-    }, 200);
+  // Handle closing payment form
+  const handleClosePaymentForm = () => {
+    setShowPaymentForm(false);
+    // Reset form state if needed
+    setError("");
   };
 
   return (
@@ -514,49 +512,26 @@ function UploadResumeContent() {
           </div>
         )}
 
-        {/* Start Interview Card */}
-        {showStartCard && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-            <div className="bg-zinc-900 rounded-2xl p-6 sm:p-8 flex flex-col items-center gap-4 min-w-[280px] sm:min-w-[320px] relative shadow-xl mx-4">
-              <span
-                className="text-base sm:text-lg font-medium text-white text-center mb-2"
-                style={{
-                  fontFamily:
-                    'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
-                }}
-              >
-                {t("upload.readyToStartText")}
-              </span>
-
-              <button
-                className="w-full text-white font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800"
-                onClick={handleStartInterview}
-                disabled={loadingStartInterview}
-              >
-                {loadingStartInterview ? (
-                  <svg
-                    aria-hidden="true"
-                    className="inline w-5 h-5 text-gray-200 animate-spin dark:text-gray-600 mr-2"
-                    viewBox="0 0 100 101"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                      fill="#6b7280"
-                    />
-                    <path
-                      d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                      fill="#9333ea"
-                    />
-                  </svg>
-                ) : (
-                  t("upload.startInterviewText")
-                )}
-              </button>
+        {/* Payment Form Modal */}
+        {showPaymentForm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+            <div className="w-full max-w-md">
+              <PaymentForm
+                onPaymentSuccess={handlePaymentSuccess}
+                onPaymentError={handlePaymentError}
+                onClose={handleClosePaymentForm}
+                isLoading={loading}
+              />
             </div>
           </div>
         )}
+
+        {/* Payment Success Modal */}
+        <PaymentSuccessModal
+          isOpen={showSuccessModal}
+          paymentId={currentPaymentId}
+          onClose={() => setShowSuccessModal(false)}
+        />
       </div>
     </ProtectedRoute>
   );
