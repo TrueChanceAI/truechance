@@ -39,8 +39,17 @@ export async function POST(req: NextRequest) {
 
     const { interviewId, address } = await req.json();
     const { first_name, last_name, email, phone_number } = user;
-    const ip = req.headers.get("x-forwarded-for") || "";
+    const ip = req.headers.get("x-forwarded-for");
     const description = `Interview payment for ${interviewId}`;
+
+    console.log(ip);
+
+    if (!ip) {
+      return NextResponse.json(
+        { error: "IP address not found" },
+        { status: 400 }
+      );
+    }
 
     const { data: payment_order, error: payment_order_error } =
       await supabaseServer
@@ -79,6 +88,16 @@ export async function POST(req: NextRequest) {
     });
 
     if (response.success) {
+      const redirectUrl = response.redirectUrl!;
+      const orderId = edfaPay.extractOrderId(redirectUrl);
+
+      await supabaseServer
+        .from("payment_orders")
+        .update({
+          edfa_transaction_id: orderId,
+        })
+        .eq("id", payment_order.id);
+
       return NextResponse.json(response);
     } else {
       return NextResponse.json({ error: response.message }, { status: 500 });

@@ -35,6 +35,7 @@ export interface EDFAPaymentResponse {
   success: boolean;
   message: string;
   redirectUrl?: string;
+  data?: any; // Added for new functionality
 }
 
 export interface EDFAPaymentData {
@@ -98,6 +99,7 @@ export class EDFAPayment {
       // Var to_md5 = order.number + order.amount + order.currency + order.description + merchant.pass;
       const payload = `${paymentData.paymentId}${paymentData.amount}SAR${paymentData.description}${this.password}`;
       const hash = this.generateInitiateHash(payload);
+      const term_url_3ds = `${this.callbackUrl}?paymentId=${paymentData.paymentId}`;
 
       const paymentRequest: EDFAPaymentInitiateRequest = {
         action: "SALE",
@@ -116,7 +118,7 @@ export class EDFAPayment {
         payer_email: paymentData.user.email,
         payer_phone: paymentData.user.phoneNumber,
         payer_ip: paymentData.ip,
-        term_url_3ds: this.callbackUrl,
+        term_url_3ds,
         auth: "N",
         recurring_init: "N",
         hash: hash,
@@ -222,6 +224,7 @@ export class EDFAPayment {
         const contentType = response.headers.get("content-type");
         if (contentType && contentType.includes("application/json")) {
           responseData = await response.json();
+          console.log("EDFA Payment Status Response:", responseData);
         } else {
           // Handle non-JSON responses (like error messages)
           const textResponse = await response.text();
@@ -239,11 +242,24 @@ export class EDFAPayment {
         };
       }
 
-      if (response.ok) {
-        return {
-          success: true,
-          message: "Payment status retrieved successfully",
-        };
+      if (response.ok && responseData) {
+        // Extract the payment status from the response
+        const paymentStatus =
+          responseData.responseBody?.status || responseData.status;
+
+        if (paymentStatus) {
+          return {
+            success: true,
+            message: `Payment status: ${paymentStatus}`,
+            // Include the full response data for the callback to use
+            data: responseData,
+          };
+        } else {
+          return {
+            success: false,
+            message: "Payment status not found in response",
+          };
+        }
       } else {
         return {
           success: false,
@@ -278,6 +294,21 @@ export class EDFAPayment {
     } catch (error) {
       console.error("EDFA callback validation error:", error);
       return false;
+    }
+  }
+
+  extractOrderId(url: string): string | null {
+    try {
+      const parsedUrl = new URL(url);
+      const segments = parsedUrl.pathname.split("/").filter(Boolean);
+      // Find the segment after "checkout"
+      const checkoutIndex = segments.indexOf("checkout");
+      if (checkoutIndex !== -1 && checkoutIndex + 1 < segments.length) {
+        return segments[checkoutIndex + 1];
+      }
+      return null;
+    } catch {
+      return null; // invalid URL
     }
   }
 
