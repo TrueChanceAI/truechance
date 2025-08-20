@@ -8,7 +8,7 @@ export const useLanguage = () => {
   const dispatch = useDispatch();
   const currentLang = useSelector((s: RootState) => s.language.currentLang);
 
-  const t = (key: string): string => getTranslation(currentLang, key);
+  const t = (key: string): any => getTranslation(currentLang, key);
 
   return {
     currentLang,

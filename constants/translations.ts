@@ -141,6 +141,21 @@ export interface Translations {
       getInTouch: string;
     };
   };
+  payment: {
+    failed: {
+      title: string;
+      subtitle: string;
+      description: string;
+      tryAgainButton: string;
+      contactSupportButton: string;
+      returnHomeButton: string;
+      whatHappened: string;
+      reasons: string[];
+      nextSteps: string;
+      supportNote: string;
+      nextStepsList: string[];
+    };
+  };
 }
 
 export const translations: Record<string, Translations> = {
@@ -305,6 +320,33 @@ export const translations: Record<string, Translations> = {
         getInTouch: "Contact Us",
       },
     },
+    payment: {
+      failed: {
+        title: "Payment Failed",
+        subtitle: "We couldn't process your payment.",
+        description:
+          "Your payment was declined or encountered an error. Please try again or contact support for assistance.",
+        tryAgainButton: "Try Again",
+        contactSupportButton: "Contact Support",
+        returnHomeButton: "Return Home",
+        whatHappened: "What happened?",
+        reasons: [
+          "Insufficient funds in your account.",
+          "Card declined by the bank.",
+          "Invalid card details.",
+          "Payment method expired.",
+          "Fraudulent activity detected.",
+        ],
+        nextSteps: "Next steps:",
+        supportNote:
+          "If you continue to experience issues, please contact our support team.",
+        nextStepsList: [
+          "Check your payment method and try again",
+          "Ensure your card has sufficient funds",
+          "Verify your card details are correct",
+        ],
+      },
+    },
   },
   ar: {
     home: {
@@ -467,10 +509,36 @@ export const translations: Record<string, Translations> = {
         getInTouch: "اتصل بنا",
       },
     },
+    payment: {
+      failed: {
+        title: "فشل الدفع",
+        subtitle: "لم نتمكن من معالجة دفعتك.",
+        description:
+          "تم رفض دفعتك أو واجهت مشكلة. يرجى المحاولة مرة أخرى أو الاتصال بالدعم للمساعدة.",
+        tryAgainButton: "حاول مرة أخرى",
+        contactSupportButton: "اتصل بالدعم",
+        returnHomeButton: "العودة إلى الرئيسية",
+        whatHappened: "ماذا حدث؟",
+        reasons: [
+          "عدم وجود رصيد في حسابك.",
+          "تم رفض البطاقة بواسطة البنك.",
+          "تفاصيل بطاقة غير صالحة.",
+          "تاريخ انتهاء بطاقتك منتهي.",
+          "نشاط تزويري مكتشف.",
+        ],
+        nextSteps: "الخطوات التالية:",
+        supportNote: "إذا استمرت المشاكل، يرجى الاتصال بفريق الدعم الخاص بنا.",
+        nextStepsList: [
+          "تحقق من طريقة الدفع الخاصة بك وحاول مرة أخرى",
+          "تأكد من وجود رصيد كافٍ في حسابك",
+          "تأكد من صحة تفاصيل بطاقتك",
+        ],
+      },
+    },
   },
 };
 
-export const getTranslation = (lang: string, key: string): string => {
+export const getTranslation = (lang: string, key: string): any => {
   const langTranslations = translations[lang] || translations.en;
   const keys = key.split(".");
   let value: any = langTranslations;
