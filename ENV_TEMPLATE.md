@@ -14,6 +14,15 @@ NEXT_PUBLIC_VAPI_WORKFLOW_ID=your_vapi_workflow_id_here
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url_here
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+# Email (SMTP)
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USER=your_smtp_username
+SMTP_PASS=your_smtp_password
+FROM_EMAIL=no-reply@truechance.app
+
+# Auth
+JWT_SECRET=your_jwt_secret_here
 ```
 
 ## 📝 Instructions:

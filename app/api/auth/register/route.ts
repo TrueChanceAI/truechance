@@ -105,8 +105,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: send OTP via email
-    console.log(`OTP for ${email}: ${otp}`);
+    // Send OTP via email
+    try {
+      const { sendOtpEmail } = await import("@/lib/mail");
+      await sendOtpEmail(email, otp);
+    } catch (e) {
+      console.warn("Failed to send OTP email (continuing):", e);
+    }
 
     return NextResponse.json(
       {

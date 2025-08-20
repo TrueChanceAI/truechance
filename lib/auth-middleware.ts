@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import jwt from "jsonwebtoken";
 
 export interface AuthenticatedUser {
   id: string;
@@ -35,17 +35,12 @@ export async function authenticateUser(req: NextRequest): Promise<AuthResult> {
     const parts = token.split(".");
     if (parts.length === 3) {
       try {
-        let payloadStr: string;
-        try {
-          payloadStr = Buffer.from(parts[1], "base64").toString();
-        } catch {
-          const padded = parts[1] + "=".repeat((4 - (parts[1].length % 4)) % 4);
-          payloadStr = Buffer.from(padded, "base64").toString();
+        const secret = process.env.JWT_SECRET;
+        if (!secret) {
+          // No secret configured; reject signed tokens
+          return { user: null, error: "Server misconfiguration", status: 500 };
         }
-        const payload = JSON.parse(payloadStr);
-        if (payload.exp && Date.now() >= payload.exp * 1000) {
-          return { user: null, error: "Token expired", status: 401 };
-        }
+        const payload = jwt.verify(token, secret) as any;
         return {
           user: {
             id: payload.sub || payload.kid || "unknown",
@@ -55,7 +50,7 @@ export async function authenticateUser(req: NextRequest): Promise<AuthResult> {
           status: 200,
         };
       } catch (e) {
-        console.error("JWT decode error:", e);
+        console.error("JWT verify error:", e);
         return { user: null, error: "Invalid token", status: 401 };
       }
     }

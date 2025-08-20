@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import bcrypt from "bcryptjs";
 import { supabaseServer } from "@/lib/supabase-server";
+import jwt from "jsonwebtoken";
 
 export async function POST(request: NextRequest) {
   try {
@@ -77,10 +78,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate a simple session token (you might want to use JWT here)
-    const sessionToken = Buffer.from(`${user.id}:${Date.now()}`).toString(
-      "base64"
-    );
+    // Generate JWT
+    const jwtSecret = process.env.JWT_SECRET || "";
+
+    const payload = {
+      id: user.id,
+      email: user.email,
+      name: `${user.first_name || ""} ${user.last_name || ""}`.trim(),
+    };
+    const token = jwt.sign(payload, jwtSecret, { expiresIn: "7d" });
 
     // Return user data (without sensitive information)
     return NextResponse.json({
@@ -93,7 +99,7 @@ export async function POST(request: NextRequest) {
         phoneNumber: user.phone_number,
         isEmailVerified: user.is_email_verified,
       },
-      sessionToken,
+      token,
     });
   } catch (error) {
     console.error("Login error:", error);
