@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { cors, setCorsHeaders } from "./lib/cors";
 
 // Add paths that require authentication
 const protectedPaths = [
@@ -16,6 +17,26 @@ const authPaths = ["/login", "/signup"];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Handle CORS for API routes
+  if (pathname.startsWith("/api/")) {
+    // Handle preflight OPTIONS request
+    const corsResponse = cors(request);
+    if (corsResponse) {
+      return corsResponse;
+    }
+
+    // For non-OPTIONS requests, create a response and add CORS headers
+    const response = NextResponse.next();
+    setCorsHeaders(response, {
+      origin: ["https://www.true-chance.com", "https://true-chance.com"],
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      headers: ["Content-Type", "Authorization"],
+      credentials: true,
+    });
+
+    return response;
+  }
 
   // Check if the path requires authentication
   const isProtectedPath = protectedPaths.some((path) =>
@@ -44,12 +65,13 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public folder
+     *
+     * Note: We removed 'api' from the exclusion list to handle CORS
      */
-    "/((?!api|_next/static|_next/image|favicon.ico|public).*)",
+    "/((?!_next/static|_next/image|favicon.ico|public).*)",
   ],
 };
