@@ -2,6 +2,7 @@
 
 import { KindeProvider } from "@kinde-oss/kinde-auth-nextjs";
 import { AuthProvider } from "@/lib/contexts/AuthContext";
+import { TranslationProvider } from "@/lib/contexts/TranslationContext";
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -16,9 +17,9 @@ export function Providers({ children }: ProvidersProps) {
       logoutUrl={process.env.KINDE_POST_LOGOUT_REDIRECT_URL!}
       redirectUrl={process.env.KINDE_POST_LOGIN_REDIRECT_URL!}
     >
-      <AuthProvider>
-        {children}
-      </AuthProvider>
+      <TranslationProvider>
+        <AuthProvider>{children}</AuthProvider>
+      </TranslationProvider>
     </KindeProvider>
   );
 }

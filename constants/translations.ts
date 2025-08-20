@@ -9,6 +9,43 @@ export interface Translations {
     home: string;
     aboutUs: string;
     language: string;
+    signIn: string;
+    menu: string;
+  };
+  auth: {
+    signIn: string;
+    signUp: string;
+    createAccount: string;
+    welcomeBack: string;
+    signInToContinue: string;
+    signUpToGetStarted: string;
+    signInToAccount: string;
+    signUpToAccount: string;
+    alreadyHaveAccount: string;
+    dontHaveAccount: string;
+    forgotPassword: string;
+    rememberMe: string;
+    orContinueWith: string;
+    magicLink: string;
+    emailPlaceholder: string;
+    passwordPlaceholder: string;
+    firstNamePlaceholder: string;
+    lastNamePlaceholder: string;
+    confirmPasswordPlaceholder: string;
+    phoneNumberPlaceholder: string;
+    termsAcceptText: string;
+    termsLinkText: string;
+    privacyPolicyText: string;
+    privacyPolicyLinkText: string;
+    authenticationFailed: string;
+    emailAddress: string;
+    password: string;
+    firstName: string;
+    lastName: string;
+    phoneNumber: string;
+    confirmPassword: string;
+    signingIn: string;
+    creatingAccount: string;
   };
   interview: {
     title: string;
@@ -20,6 +57,7 @@ export interface Translations {
     thankYouMessage: string;
     thankYouSubtitle: string;
     analyzingInterview: string;
+    returnToHome: string;
   };
   upload: {
     title: string;
@@ -51,8 +89,9 @@ export interface Translations {
       title: string;
       subtitle: string;
       description: string;
+      leadingPlatform: string;
     };
-    
+
     mission: {
       title: string;
       content: string;
@@ -91,7 +130,7 @@ export interface Translations {
         description: string;
       };
     };
-    
+
     team: {
       title: string;
       subtitle: string;
@@ -108,14 +147,52 @@ export const translations: Record<string, Translations> = {
   en: {
     home: {
       title: "Begin a smarter journey to your next role.",
-      subtitle: "Let the AI interview highlight your skills beyond a résumé, unlocking ideal, bias-free opportunities for you.",
+      subtitle:
+        "Let the AI interview highlight your skills beyond a résumé, unlocking ideal, bias-free opportunities for you.",
       uploadButton: "Upload Resume & Start",
-      redirectingText: "Redirecting to resume upload..."
+      redirectingText: "Redirecting to resume upload...",
     },
     navigation: {
       home: "Home",
       aboutUs: "About Us",
-      language: "Language"
+      language: "Language",
+      signIn: "Sign In",
+      menu: "Menu",
+    },
+    auth: {
+      signIn: "Sign In",
+      signUp: "Sign Up",
+      createAccount: "Create Account",
+      welcomeBack: "Welcome back!",
+      signInToContinue: "Sign in to continue",
+      signUpToGetStarted: "Sign up to get started with TrueChance",
+      signInToAccount: "Sign in to your account to continue",
+      signUpToAccount: "Sign up to your account to continue",
+      alreadyHaveAccount: "Already have an account?",
+      dontHaveAccount: "Don't have an account?",
+      forgotPassword: "Forgot your password?",
+      rememberMe: "Remember me",
+      orContinueWith: "Or continue with",
+      magicLink: "Magic Link",
+      emailPlaceholder: "Enter your email",
+      passwordPlaceholder: "Enter your password",
+      firstNamePlaceholder: "Enter your first name",
+      lastNamePlaceholder: "Enter your last name",
+      confirmPasswordPlaceholder: "Confirm your password",
+      phoneNumberPlaceholder: "Enter your phone number",
+      termsAcceptText: "I accept the Terms and Conditions",
+      termsLinkText: "Terms and Conditions",
+      privacyPolicyText: "and Privacy Policy",
+      privacyPolicyLinkText: "Privacy Policy",
+      authenticationFailed: "Authentication failed. Please sign in again.",
+      emailAddress: "Email Address",
+      password: "Password",
+      firstName: "First Name",
+      lastName: "Last Name",
+      phoneNumber: "Phone Number",
+      confirmPassword: "Confirm Password",
+      signingIn: "Signing In...",
+      creatingAccount: "Creating Account...",
     },
     interview: {
       title: "Interview",
@@ -124,9 +201,11 @@ export const translations: Record<string, Translations> = {
       endButton: "End",
       retakeInterview: "Retake Interview",
       thankYouTitle: "Thank You!",
-      thankYouMessage: "Your interview has been completed successfully. We've saved your responses and will provide you with detailed feedback shortly.",
+      thankYouMessage:
+        "Your interview has been completed successfully. We've saved your responses and will provide you with detailed feedback shortly.",
       thankYouSubtitle: "Interview completed on",
-      analyzingInterview: "Analyzing the interview..."
+      analyzingInterview: "Analyzing the interview...",
+      returnToHome: "Return to Home",
     },
     upload: {
       title: "Upload Resume",
@@ -140,11 +219,12 @@ export const translations: Record<string, Translations> = {
       progressSteps: [
         "Analyzing your CV…",
         "Analyzing your skills…",
-        "Generating questions…"
+        "Generating questions…",
       ],
-      termsAcceptText: "I accept the Terms and Conditions and agree to the processing of my data for interview purposes.",
+      termsAcceptText:
+        "I accept the Terms and Conditions and agree to the processing of my data for interview purposes.",
       termsLinkText: "Terms and Conditions",
-      termsErrorText: "Please accept the terms and conditions to continue."
+      termsErrorText: "Please accept the terms and conditions to continue.",
     },
     profile: {
       title: "My Profile",
@@ -153,79 +233,128 @@ export const translations: Record<string, Translations> = {
       emailCannotChange: "Email cannot be changed.",
       firstName: "First Name",
       lastName: "Last Name",
-      profileInfoNote: "Your profile information is used to personalize your interview experience.",
+      profileInfoNote:
+        "Your profile information is used to personalize your interview experience.",
       profile: "Profile",
-      signOut: "Sign Out"
+      signOut: "Sign Out",
     },
     about: {
-             hero: {
-         title: "About Us",
-         subtitle: "Transforming job interviews with AI technology",
-         description: "Our mission is to empower job seekers and hiring managers with advanced AI technology, enabling them to connect, communicate, and collaborate effectively."
-       },
-             
+      hero: {
+        title: "About Us",
+        subtitle: "Transforming job interviews with AI technology",
+        description:
+          "Our mission is to empower job seekers and hiring managers with advanced AI technology, enabling them to connect, communicate, and collaborate effectively.",
+        leadingPlatform: "Leading AI Platform",
+      },
+
       mission: {
         title: "Our Mission",
-        content: "To revolutionize the recruitment industry by providing AI-powered tools that enhance the interview process, making it more accessible, efficient, and effective for all stakeholders."
+        content:
+          "To revolutionize the recruitment industry by providing AI-powered tools that enhance the interview process, making it more accessible, efficient, and effective for all stakeholders.",
       },
       vision: {
         title: "Our Vision",
-        content: "To become the leading platform for AI-powered interviews, empowering millions of users worldwide to achieve their career goals through seamless, unbiased, and highly personalized interview experiences."
+        content:
+          "To become the leading platform for AI-powered interviews, empowering millions of users worldwide to achieve their career goals through seamless, unbiased, and highly personalized interview experiences.",
       },
       values: {
         title: "Our Values",
         innovation: {
           title: "Innovation",
-          description: "We are constantly pushing the boundaries of AI technology to deliver the most accurate and reliable interview results."
+          description:
+            "We are constantly pushing the boundaries of AI technology to deliver the most accurate and reliable interview results.",
         },
         accessibility: {
           title: "Accessibility",
-          description: "We believe in making our platform available to everyone, regardless of their background or location."
+          description:
+            "We believe in making our platform available to everyone, regardless of their background or location.",
         },
         excellence: {
           title: "Excellence",
-          description: "We strive for perfection in every aspect of our platform, from the quality of our AI models to the user experience."
-        }
+          description:
+            "We strive for perfection in every aspect of our platform, from the quality of our AI models to the user experience.",
+        },
       },
       features: {
         title: "Key Features",
         voiceInterviews: {
           title: "Voice Interviews",
-          description: "Experience a natural, conversational interview format that captures the nuances of human communication."
+          description:
+            "Experience a natural, conversational interview format that captures the nuances of human communication.",
         },
         personalizedQuestions: {
           title: "Personalized Questions",
-          description: "Get interview questions tailored to your specific skills, experience, and career goals."
+          description:
+            "Get interview questions tailored to your specific skills, experience, and career goals.",
         },
         analysis: {
           title: "Comprehensive Analysis",
-          description: "Receive detailed feedback on your interview performance, strengths, and areas for improvement."
-        }
+          description:
+            "Receive detailed feedback on your interview performance, strengths, and areas for improvement.",
+        },
       },
-      
+
       team: {
         title: "Our Team",
-        subtitle: "A diverse group of experts dedicated to building the future of AI interviews."
+        subtitle:
+          "A diverse group of experts dedicated to building the future of AI interviews.",
       },
       contact: {
         title: "Get in Touch",
         subtitle: "Have questions or feedback? We'd love to hear from you!",
-        getInTouch: "Contact Us"
-      }
-    }
+        getInTouch: "Contact Us",
+      },
+    },
   },
   ar: {
     home: {
       title: "ابدأ الرحلة الذكية نحو وظيفتك القادمة",
-      subtitle: "دع المقابلة الفورية مع الذكاء الصناعي تُظهر خبراتك ومهاراتك بدقة تتجاوز السيرة الذاتية، وتفتح لك باب الترشيح للفرص المثالية التي تناسبك تمامًا… بلا تحيز."
-,
+      subtitle:
+        "دع المقابلة الفورية مع الذكاء الصناعي تُظهر خبراتك ومهاراتك بدقة تتجاوز السيرة الذاتية، وتفتح لك باب الترشيح للفرص المثالية التي تناسبك تمامًا… بلا تحيز.",
       uploadButton: "رفع السيرة الذاتية والبدء",
-      redirectingText: "إعادة التوجيه لرفع السيرة الذاتية..."
+      redirectingText: "إعادة التوجيه لرفع السيرة الذاتية...",
     },
     navigation: {
       home: "الرئيسية",
       aboutUs: "من نحن",
-      language: "اللغة"
+      language: "اللغة",
+      signIn: "تسجيل الدخول",
+      menu: "القائمة",
+    },
+    auth: {
+      signIn: "تسجيل الدخول",
+      signUp: "إنشاء حساب",
+      createAccount: "إنشاء حساب",
+      welcomeBack: "مرحباً بعودتك!",
+      signInToContinue: "سجل دخولك للمتابعة",
+      signUpToGetStarted: "أنشئ حسابك للبدء مع TrueChance",
+      signInToAccount: "سجل دخولك إلى حسابك للمتابعة",
+      signUpToAccount: "أنشئ حسابك للمتابعة",
+      alreadyHaveAccount: "لديك حساب بالفعل؟",
+      dontHaveAccount: "ليس لديك حساب؟",
+      forgotPassword: "نسيت كلمة المرور؟",
+      rememberMe: "تذكرني",
+      orContinueWith: "أو استمر مع",
+      magicLink: "رابط سحري",
+      emailPlaceholder: "أدخل بريدك الإلكتروني",
+      passwordPlaceholder: "أدخل كلمة المرور",
+      firstNamePlaceholder: "أدخل اسمك الأول",
+      lastNamePlaceholder: "أدخل اسمك الأخير",
+      confirmPasswordPlaceholder: "أكد كلمة المرور",
+      phoneNumberPlaceholder: "أدخل رقم هاتفك",
+      termsAcceptText: "أوافق على الشروط والأحكام",
+      termsLinkText: "الشروط والأحكام",
+      privacyPolicyText: "وسياسة الخصوصية",
+      privacyPolicyLinkText: "سياسة الخصوصية",
+      authenticationFailed: "فشل في المصادقة. يرجى تسجيل الدخول مرة أخرى.",
+      emailAddress: "البريد الإلكتروني",
+      password: "كلمة المرور",
+      firstName: "الاسم الأول",
+      lastName: "اسم العائلة",
+      phoneNumber: "رقم الهاتف",
+      confirmPassword: "تأكيد كلمة المرور",
+      signingIn: "جاري تسجيل الدخول...",
+      creatingAccount: "جاري إنشاء الحساب...",
     },
     interview: {
       title: "المقابلة",
@@ -234,9 +363,11 @@ export const translations: Record<string, Translations> = {
       endButton: "إنهاء",
       retakeInterview: "إعادة المقابلة",
       thankYouTitle: "شكراً لك!",
-      thankYouMessage: "تم إكمال مقابلتك بنجاح. لقد حفظنا ردودك وسنقدم لك تقييماً مفصلاً قريباً.",
+      thankYouMessage:
+        "تم إكمال مقابلتك بنجاح. لقد حفظنا ردودك وسنقدم لك تقييماً مفصلاً قريباً.",
       thankYouSubtitle: "تم إكمال المقابلة في",
-      analyzingInterview: "جاري تحليل المقابلة..."
+      analyzingInterview: "جاري تحليل المقابلة...",
+      returnToHome: "العودة إلى الرئيسية",
     },
     upload: {
       title: "رفع السيرة الذاتية",
@@ -250,11 +381,12 @@ export const translations: Record<string, Translations> = {
       progressSteps: [
         "جاري تحليل سيرتك الذاتية…",
         "جاري تحليل مهاراتك…",
-        "جاري إنشاء الأسئلة…"
+        "جاري إنشاء الأسئلة…",
       ],
-      termsAcceptText: "أوافق على الشروط والأحكام وأوافق على معالجة بياناتي لأغراض المقابلة.",
+      termsAcceptText:
+        "أوافق على الشروط والأحكام وأوافق على معالجة بياناتي لأغراض المقابلة.",
       termsLinkText: "الشروط والأحكام",
-      termsErrorText: "يرجى الموافقة على الشروط والأحكام للمتابعة."
+      termsErrorText: "يرجى الموافقة على الشروط والأحكام للمتابعة.",
     },
     profile: {
       title: "ملفي الشخصي",
@@ -263,78 +395,90 @@ export const translations: Record<string, Translations> = {
       emailCannotChange: "لا يمكن تغيير البريد الإلكتروني.",
       firstName: "الاسم الشخصي",
       lastName: "الاسم العائلي ",
-      profileInfoNote: "تستخدم معلومات ملفك الشخصي لتخصيص تجربة المقابلة الخاصة بك.",
+      profileInfoNote:
+        "تستخدم معلومات ملفك الشخصي لتخصيص تجربة المقابلة الخاصة بك.",
       profile: "الملف الشخصي",
-      signOut: "تسجيل الخروج"
+      signOut: "تسجيل الخروج",
     },
     about: {
-             hero: {
-         title: "من نحن",
-         subtitle: "تحويل المقابلات الوظيفية بتقنية الذكاء الاصطناعي",
-         description: "مهمتنا هي تمكين المتقدمين للوظائف والمستخدمين في التوظيف بتقنية الذكاء الصناعي المتقدمة، مما يسمح لهم بالاتصال والتواصل والتعاون بكفاءة."
-       },
-             
+      hero: {
+        title: "من نحن",
+        subtitle: "تحويل المقابلات الوظيفية بتقنية الذكاء الاصطناعي",
+        description:
+          "مهمتنا هي تمكين المتقدمين للوظائف والمستخدمين في التوظيف بتقنية الذكاء الصناعي المتقدمة، مما يسمح لهم بالاتصال والتواصل والتعاون بكفاءة.",
+        leadingPlatform: "منصة الذكاء الاصطناعي الرائدة",
+      },
+
       mission: {
         title: "مهمتنا",
-        content: "لتحويل صناعة التوظيف بتقنية الذكاء الصناعي، من خلال تقديم أدوات مدعومة بتقنية الذكاء الصناعي تحسن عملية المقابلة، مما يجعلها أكثر доступية وفعالية وفعالية لجميع الأطراف المعنية."
+        content:
+          "لتحويل صناعة التوظيف بتقنية الذكاء الصناعي، من خلال تقديم أدوات مدعومة بتقنية الذكاء الصناعي تحسن عملية المقابلة، مما يجعلها أكثر доступية وفعالية وفعالية لجميع الأطراف المعنية.",
       },
       vision: {
         title: "رؤيتنا",
-        content: "لتصبح أفضل منصة للمقابلات الوظيفية بتقنية الذكاء الصناعي، تمكن ملايين المستخدمين في العالم الكلي من تحقيق أهدافهم عبر تجربة مستمرة، محايدة ومخصصة بشكل كبير للمقابلات الوظيفية."
+        content:
+          "لتصبح أفضل منصة للمقابلات الوظيفية بتقنية الذكاء الصناعي، تمكن ملايين المستخدمين في العالم الكلي من تحقيق أهدافهم عبر تجربة مستمرة، محايدة ومخصصة بشكل كبير للمقابلات الوظيفية.",
       },
       values: {
         title: "قيمنا",
         innovation: {
           title: "الابتكار",
-          description: "نحن دائماً ندفع حدود تقنية الذكاء الصناعي لتقديم أدق وأكثر موثوقية نتائج المقابلات."
+          description:
+            "نحن دائماً ندفع حدود تقنية الذكاء الصناعي لتقديم أدق وأكثر موثوقية نتائج المقابلات.",
         },
         accessibility: {
           title: "الوصول",
-          description: "نحن نؤمن بتوفير منصتنا للجميع، بغض النظر عن ظروفهم أو موقعهم."
+          description:
+            "نحن نؤمن بتوفير منصتنا للجميع، بغض النظر عن ظروفهم أو موقعهم.",
         },
         excellence: {
           title: "الاستثناء",
-          description: "نحن نسعى لتحقيق التميز في كل جانب من جوانب منصتنا، من جودة نماذج الذكاء الصناعي إلى تجربة المستخدم."
-        }
+          description:
+            "نحن نسعى لتحقيق التميز في كل جانب من جوانب منصتنا، من جودة نماذج الذكاء الصناعي إلى تجربة المستخدم.",
+        },
       },
       features: {
         title: "المميزات الرئيسية",
         voiceInterviews: {
           title: "المقابلات الصوتية",
-          description: "استضاف خبرة مقابلة منطقية، تمكنك من التواصل الطبيعي والتفاعل مع السياق."
+          description:
+            "استضاف خبرة مقابلة منطقية، تمكنك من التواصل الطبيعي والتفاعل مع السياق.",
         },
         personalizedQuestions: {
           title: "أسئلة مخصصة",
-          description: "احصل على أسئلة المقابلة المخصصة لمهاراتك وخبرتك وأهداف حياتك."
+          description:
+            "احصل على أسئلة المقابلة المخصصة لمهاراتك وخبرتك وأهداف حياتك.",
         },
         analysis: {
           title: "التحليل الشامل",
-          description: "احصل على توصيات مفصلة حول أدائك في المقابلة، والقوى، والمناطق التي يمكن تحسينها."
-        }
+          description:
+            "احصل على توصيات مفصلة حول أدائك في المقابلة، والقوى، والمناطق التي يمكن تحسينها.",
+        },
       },
-      
+
       team: {
         title: "فريقنا",
-        subtitle: "مجموعة متنوعة من الخبراء الملتزمون ببناء المستقبل للمقابلات الوظيفية."
+        subtitle:
+          "مجموعة متنوعة من الخبراء الملتزمون ببناء المستقبل للمقابلات الوظيفية.",
       },
       contact: {
         title: "اتصل بنا",
         subtitle: "هل لديك أسئلة أو توصيات؟ نحن نحب أن نسمع منك!",
-        getInTouch: "اتصل بنا"
-      }
-    }
-  }
+        getInTouch: "اتصل بنا",
+      },
+    },
+  },
 };
 
 export const getTranslation = (lang: string, key: string): string => {
   const langTranslations = translations[lang] || translations.en;
-  const keys = key.split('.');
+  const keys = key.split(".");
   let value: any = langTranslations;
-  
+
   for (const k of keys) {
     value = value?.[k];
     if (value === undefined) break;
   }
-  
+
   return value || key;
-}; 
+};

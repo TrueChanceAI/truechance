@@ -120,9 +120,5 @@ function HomeContent() {
 }
 
 export default function Home() {
-  return (
-    <Providers>
-      <HomeContent />
-    </Providers>
-  );
+  return <HomeContent />;
 }

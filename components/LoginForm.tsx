@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
+import { useLanguage } from "@/lib/hooks/useLanguage";
 
 interface LoginFormValues {
   email: string;
@@ -16,6 +17,7 @@ interface LoginFormValues {
 }
 
 const LoginForm = () => {
+  const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -46,8 +48,10 @@ const LoginForm = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold text-white">Welcome Back</h1>
-        <p className="text-white/70">Sign in to your account to continue</p>
+        <h1 className="text-3xl font-bold text-white">
+          {t("auth.welcomeBack")}
+        </h1>
+        <p className="text-white/70">{t("auth.signInToAccount")}</p>
       </div>
 
       {/* Formik Form */}
@@ -71,7 +75,7 @@ const LoginForm = () => {
             {/* Email Field */}
             <div className="space-y-2">
               <Label htmlFor="email" className="text-white font-medium">
-                Email Address
+                {t("auth.emailAddress")}
               </Label>
               <Field name="email">
                 {({ field, meta }: any) => (
@@ -79,7 +83,7 @@ const LoginForm = () => {
                     {...field}
                     id="email"
                     type="email"
-                    placeholder="Enter your email"
+                    placeholder={t("auth.emailPlaceholder")}
                     className={cn(
                       "bg-white/10 border-white/20 text-white placeholder:text-white/50",
                       "focus:bg-white/20 focus:border-white/40",
@@ -108,7 +112,7 @@ const LoginForm = () => {
             {/* Password Field */}
             <div className="space-y-2">
               <Label htmlFor="password" className="text-white font-medium">
-                Password
+                {t("auth.password")}
               </Label>
               <div className="relative">
                 <Field name="password">
@@ -117,7 +121,7 @@ const LoginForm = () => {
                       {...field}
                       id="password"
                       type={showPassword ? "text" : "password"}
-                      placeholder="Enter your password"
+                      placeholder={t("auth.passwordPlaceholder")}
                       className={cn(
                         "bg-white/10 border-white/20 text-white placeholder:text-white/50 pr-12",
                         "focus:bg-white/20 focus:border-white/40",
@@ -174,10 +178,10 @@ const LoginForm = () => {
               {isLoading ? (
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Signing In...
+                  {t("auth.signingIn")}
                 </div>
               ) : (
-                "Sign In"
+                t("auth.signIn")
               )}
             </Button>
           </Form>
@@ -187,12 +191,12 @@ const LoginForm = () => {
       {/* Links */}
       <div className="text-center space-y-3">
         <div className="text-sm">
-          <span className="text-white/70">Don't have an account? </span>
+          <span className="text-white/70">{t("auth.dontHaveAccount")} </span>
           <Link
             href="/signup"
-            className="text-purple-400 hover:text-purple-300 font-medium transition-colors"
+            className="text-purple-300 hover:text-purple-200 font-medium transition-colors"
           >
-            Sign up
+            {t("auth.signUp")}
           </Link>
         </div>
       </div>

@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { Eye } from "lucide-react";
 import { EyeOff } from "lucide-react";
+import { useLanguage } from "@/lib/hooks/useLanguage";
 
 // Validation schema using Yup
 const RegisterValidationSchema = Yup.object().shape({
@@ -50,6 +51,7 @@ export default function RegisterForm({
   onSuccess,
   onModeChange,
 }: RegisterFormProps) {
+  const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -102,8 +104,10 @@ export default function RegisterForm({
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold text-white">Create Account</h1>
-        <p className="text-white/70">Sign up to get started with TrueChance</p>
+        <h1 className="text-3xl font-bold text-white">
+          {t("auth.createAccount")}
+        </h1>
+        <p className="text-white/70">{t("auth.signUpToGetStarted")}</p>
       </div>
 
       {/* Formik Form */}
@@ -132,14 +136,14 @@ export default function RegisterForm({
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName" className="text-white font-medium">
-                  First Name
+                  {t("auth.firstName")}
                 </Label>
                 <Field name="firstName">
                   {({ field, meta }: any) => (
                     <Input
                       {...field}
                       id="firstName"
-                      placeholder="John"
+                      placeholder={t("auth.firstNamePlaceholder")}
                       className={cn(
                         "bg-white/10 border-white/20 text-white placeholder:text-white/50",
                         "focus:bg-white/20 focus:border-white/40",
@@ -167,14 +171,14 @@ export default function RegisterForm({
 
               <div className="space-y-2">
                 <Label htmlFor="lastName" className="text-white font-medium">
-                  Last Name
+                  {t("auth.lastName")}
                 </Label>
                 <Field name="lastName">
                   {({ field, meta }: any) => (
                     <Input
                       {...field}
                       id="lastName"
-                      placeholder="Doe"
+                      placeholder={t("auth.lastNamePlaceholder")}
                       className={cn(
                         "bg-white/10 border-white/20 text-white placeholder:text-white/50",
                         "focus:bg-white/20 focus:border-white/40",
@@ -204,7 +208,7 @@ export default function RegisterForm({
             {/* Email Field */}
             <div className="space-y-2">
               <Label htmlFor="email" className="text-white font-medium">
-                Email Address
+                {t("auth.emailAddress")}
               </Label>
               <Field name="email">
                 {({ field, meta }: any) => (
@@ -212,7 +216,7 @@ export default function RegisterForm({
                     {...field}
                     id="email"
                     type="email"
-                    placeholder="john@example.com"
+                    placeholder={t("auth.emailPlaceholder")}
                     className={cn(
                       "bg-white/10 border-white/20 text-white placeholder:text-white/50",
                       "focus:bg-white/20 focus:border-white/40",
@@ -241,7 +245,7 @@ export default function RegisterForm({
             {/* Phone Field */}
             <div className="space-y-2">
               <Label htmlFor="phoneNumber" className="text-white font-medium">
-                Phone Number
+                {t("auth.phoneNumber")}
               </Label>
               <Field name="phoneNumber">
                 {({ field, meta }: any) => (
@@ -249,7 +253,7 @@ export default function RegisterForm({
                     {...field}
                     id="phoneNumber"
                     type="tel"
-                    placeholder="+1234567890"
+                    placeholder={t("auth.phoneNumberPlaceholder")}
                     className={cn(
                       "bg-white/10 border-white/20 text-white placeholder:text-white/50",
                       "focus:bg-white/20 focus:border-white/40",
@@ -278,7 +282,7 @@ export default function RegisterForm({
             {/* Password Field */}
             <div className="space-y-2">
               <Label htmlFor="password" className="text-white font-medium">
-                Password
+                {t("auth.password")}
               </Label>
               <div className="relative">
                 <Field name="password">
@@ -287,7 +291,7 @@ export default function RegisterForm({
                       {...field}
                       id="password"
                       type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
+                      placeholder={t("auth.passwordPlaceholder")}
                       className={cn(
                         "bg-white/10 border-white/20 text-white placeholder:text-white/50 pr-12",
                         "focus:bg-white/20 focus:border-white/40",
@@ -332,7 +336,7 @@ export default function RegisterForm({
                 htmlFor="confirmPassword"
                 className="text-white font-medium"
               >
-                Confirm Password
+                {t("auth.confirmPassword")}
               </Label>
               <div className="relative">
                 <Field name="confirmPassword">
@@ -341,7 +345,7 @@ export default function RegisterForm({
                       {...field}
                       id="confirmPassword"
                       type={showConfirmPassword ? "text" : "password"}
-                      placeholder="••••••••"
+                      placeholder={t("auth.confirmPasswordPlaceholder")}
                       className={cn(
                         "bg-white/10 border-white/20 text-white placeholder:text-white/50 pr-12",
                         "focus:bg-white/20 focus:border-white/40",
@@ -398,10 +402,10 @@ export default function RegisterForm({
               {isLoading ? (
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Creating Account...
+                  {t("auth.creatingAccount")}
                 </div>
               ) : (
-                "Sign Up"
+                t("auth.signUp")
               )}
             </Button>
           </Form>
@@ -411,12 +415,12 @@ export default function RegisterForm({
       {/* Links */}
       <div className="text-center space-y-3">
         <div className="text-sm">
-          <span className="text-white/70">Already have an account? </span>
+          <span className="text-white/70">{t("auth.alreadyHaveAccount")} </span>
           <Link
             href="/signin"
             className="text-purple-400 hover:text-purple-300 font-medium transition-colors"
           >
-            Sign in
+            {t("auth.signIn")}
           </Link>
         </div>
       </div>

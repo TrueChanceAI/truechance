@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useTranslation } from "@/lib/contexts/TranslationContext";
 
 interface LanguageOption {
   code: string;
@@ -16,78 +16,49 @@ const languages: LanguageOption[] = [
     nameEn: "English",
     nameAr: "الإنجليزية",
     flag: "https://flagcdn.com/w320/us.png",
-    font: "'Inter', sans-serif"
+    font: "'Inter', sans-serif",
   },
   {
     code: "ar",
     nameEn: "Arabic",
     nameAr: "العربية",
     flag: "https://flagcdn.com/w320/sa.png",
-    font: "'Cairo', sans-serif"
-  }
+    font: "'Cairo', sans-serif",
+  },
 ];
 
 export default function LanguageDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const [currentLang, setCurrentLang] = useState("en");
-  const router = useRouter();
+  const { currentLang, setLanguage, t } = useTranslation();
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    // Get language from localStorage on mount
-    const savedLang = localStorage.getItem("lang") || "en";
-    setCurrentLang(savedLang);
-    applyLanguageSettings(savedLang);
-  }, []);
 
   useEffect(() => {
     // Handle click outside to close dropdown
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen]);
 
-  const applyLanguageSettings = (lang: string) => {
-    const html = document.documentElement;
-    const body = document.body;
-    
-    if (lang === "ar") {
-      html.setAttribute("dir", "rtl");
-      html.setAttribute("lang", "ar");
-      body.style.fontFamily = "'Cairo', sans-serif";
-    } else {
-      html.setAttribute("dir", "ltr");
-      html.setAttribute("lang", "en");
-      body.style.fontFamily = "'Inter', sans-serif";
-    }
-  };
-
   const handleLanguageChange = (langCode: string) => {
-    localStorage.setItem("lang", langCode);
-    setCurrentLang(langCode);
-    applyLanguageSettings(langCode);
+    setLanguage(langCode);
     setIsOpen(false);
-
-    // Reload the page to apply changes
-    const currentPath = window.location.pathname;
-    if (['/', '/interview', '/upload-resume'].includes(currentPath)) {
-      window.location.reload();
-    } else {
-      window.location.href = '/';
-    }
   };
 
-  const currentLanguage = languages.find(lang => lang.code === currentLang) || languages[0];
+  const currentLanguage =
+    languages.find((lang) => lang.code === currentLang) || languages[0];
 
   return (
     <div className="relative inline-block text-left" ref={dropdownRef}>
@@ -98,13 +69,11 @@ export default function LanguageDropdown() {
         onClick={() => setIsOpen(!isOpen)}
       >
         <span className="mr-2">🌐</span>
-        <span className="hidden sm:inline">
-          {currentLang === "ar" ? "اللغة" : "Language"}
-        </span>
+        <span className="hidden sm:inline">{t("navigation.language")}</span>
       </button>
-      
+
       {isOpen && (
-        <div 
+        <div
           id="lang-menu"
           className="absolute z-50 mt-2 w-40 rounded-md shadow-lg bg-white dark:bg-gray-700 ring-1 ring-black ring-opacity-5 right-0"
         >
@@ -113,15 +82,17 @@ export default function LanguageDropdown() {
               <button
                 key={lang.code}
                 className={`block w-full text-left px-4 py-2 flex items-center hover:text-white hover:bg-[#a75717] transition-colors ${
-                  currentLang === lang.code ? 'bg-[#a75717] text-white' : 'text-gray-900 dark:text-white'
+                  currentLang === lang.code
+                    ? "bg-[#a75717] text-white"
+                    : "text-gray-900 dark:text-white"
                 }`}
                 onClick={() => handleLanguageChange(lang.code)}
                 style={{ fontFamily: lang.font }}
               >
-                <img 
-                  src={lang.flag} 
-                  alt={currentLang === "ar" ? lang.nameAr : lang.nameEn} 
-                  className="h-4 w-6 me-2 rounded-md" 
+                <img
+                  src={lang.flag}
+                  alt={currentLang === "ar" ? lang.nameAr : lang.nameEn}
+                  className="h-4 w-6 me-2 rounded-md"
                 />
                 {currentLang === "ar" ? lang.nameAr : lang.nameEn}
               </button>
@@ -131,4 +102,4 @@ export default function LanguageDropdown() {
       )}
     </div>
   );
-} 
+}

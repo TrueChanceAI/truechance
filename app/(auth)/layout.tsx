@@ -130,7 +130,7 @@ function LayoutContent({ children }: { children: ReactNode }) {
                     d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
                   />
                 </svg>
-                Sign In
+                {t("navigation.signIn")}
               </span>
               <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg"></div>
             </Link>
@@ -161,7 +161,7 @@ function LayoutContent({ children }: { children: ReactNode }) {
                     d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
                   />
                 </svg>
-                Sign In
+                {t("navigation.signIn")}
               </span>
             </Link>
           )}
@@ -214,7 +214,9 @@ function LayoutContent({ children }: { children: ReactNode }) {
       >
         {/* Menu Header */}
         <div className="flex items-center justify-between p-4 border-b border-zinc-800">
-          <h2 className="text-lg font-semibold text-white">Menu</h2>
+          <h2 className="text-lg font-semibold text-white">
+            {t("navigation.menu")}
+          </h2>
           <button
             onClick={closeMobileMenu}
             className="text-white hover:text-primary-200 transition-colors p-2 focus:outline-none focus:ring-2 focus:ring-primary-200 rounded-md"
@@ -304,7 +306,7 @@ function LayoutContent({ children }: { children: ReactNode }) {
                       d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
                     />
                   </svg>
-                  <span>Sign In</span>
+                  <span>{t("navigation.signIn")}</span>
                 </div>
               </Link>
             )}
