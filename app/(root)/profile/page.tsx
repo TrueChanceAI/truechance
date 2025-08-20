@@ -1,11 +1,12 @@
 "use client";
 
-import { useAuth } from "@/lib/contexts/AuthContext";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/redux/store";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useLanguage } from "@/lib/hooks/useLanguage";
 
 function ProfileContent() {
-  const { user } = useAuth();
+  const user = useSelector((s: RootState) => s.me.user);
   const { t, currentLang } = useLanguage();
 
   if (!user) return null;
@@ -16,53 +17,44 @@ function ProfileContent() {
         <div className="max-w-2xl mx-auto pt-8">
           <div className="bg-zinc-900 rounded-2xl p-8 border border-zinc-700">
             <div className="flex items-center gap-4 mb-8">
-              {user.picture ? (
-                <img
-                  src={user.picture}
-                  alt={user.given_name || user.email}
-                  className="w-20 h-20 rounded-full"
-                />
-              ) : (
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-600 to-blue-500 flex items-center justify-center text-white font-bold text-2xl">
-                  {user.given_name?.[0]?.toUpperCase() || user.email[0].toUpperCase()}
-                </div>
-              )}
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-600 to-blue-500 flex items-center justify-center text-white font-bold text-2xl">
+                {user.name?.[0]?.toUpperCase() || user.email[0].toUpperCase()}
+              </div>
               <div>
-                <h1 className="text-3xl font-bold text-white">{t('profile.title')}</h1>
-                <p className="text-zinc-400">{t('profile.subtitle')}</p>
+                <h1 className="text-3xl font-bold text-white">
+                  {t("profile.title")}
+                </h1>
+                <p className="text-zinc-400">{t("profile.subtitle")}</p>
               </div>
             </div>
 
             <div className="space-y-6">
               <div>
-                <h3 className="text-white text-sm font-medium mb-2">{t('profile.email')}</h3>
+                <h3 className="text-white text-sm font-medium mb-2">
+                  {t("profile.email")}
+                </h3>
                 <div className="bg-zinc-800 border border-zinc-700 text-zinc-300 p-3 rounded-lg">
                   {user.email}
                 </div>
-                <p className="text-zinc-500 text-sm mt-1">{t('profile.emailCannotChange')}</p>
+                <p className="text-zinc-500 text-sm mt-1">
+                  {t("profile.emailCannotChange")}
+                </p>
               </div>
 
-              {user.given_name && (
+              {user.name && (
                 <div>
-                  <h3 className="text-white text-sm font-medium mb-2">{t('profile.firstName')}</h3>
+                  <h3 className="text-white text-sm font-medium mb-2">
+                    {t("profile.firstName")}
+                  </h3>
                   <div className="bg-zinc-800 border border-zinc-700 text-zinc-300 p-3 rounded-lg">
-                    {user.given_name}
-                  </div>
-                </div>
-              )}
-
-              {user.family_name && (
-                <div>
-                  <h3 className="text-white text-sm font-medium mb-2">{t('profile.lastName')}</h3>
-                  <div className="bg-zinc-800 border border-zinc-700 text-zinc-300 p-3 rounded-lg">
-                    {user.family_name}
+                    {user.name}
                   </div>
                 </div>
               )}
 
               <div className="pt-4">
                 <p className="text-zinc-400 text-sm">
-                  {t('profile.profileInfoNote')}
+                  {t("profile.profileInfoNote")}
                 </p>
               </div>
             </div>

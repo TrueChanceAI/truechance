@@ -5,23 +5,25 @@ import { ReactNode, useState, useEffect } from "react";
 import LanguageDropdown from "@/components/LanguageDropdown";
 import { useLanguage } from "@/lib/hooks/useLanguage";
 import { UserMenu } from "@/components/UserMenu";
-import { useAuth } from "@/lib/contexts/AuthContext";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/redux/store";
 import { Providers } from "@/components/Providers";
 import { usePathname, useSearchParams } from "next/navigation";
 import { pageview } from "@/lib/gtag";
+import BaseLayout from "@/layouts/BaseLayout";
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <Providers>
+    <BaseLayout>
       <LayoutContent>{children}</LayoutContent>
-    </Providers>
+    </BaseLayout>
   );
 }
 
 function LayoutContent({ children }: { children: ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { t } = useLanguage();
-  const { user } = useAuth();
+  const user = useSelector((s: RootState) => s.me.user);
   const pathname = usePathname();
   const searchParams = useSearchParams();
 

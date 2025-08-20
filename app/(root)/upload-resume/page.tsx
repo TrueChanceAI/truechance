@@ -5,7 +5,8 @@ import React, { useRef } from "react";
 import { useEffect } from "react";
 import Cookies from "js-cookie";
 import { useLanguage } from "@/lib/hooks/useLanguage";
-import { useAuth } from "@/lib/contexts/AuthContext";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/redux/store";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 const LANGUAGES = [
@@ -29,7 +30,8 @@ function UploadResumeContent() {
   const [candidateName, setCandidateName] = useState("");
   const [resumeText, setResumeText] = useState(""); // Add resumeText to component state
   const { t, currentLang } = useLanguage();
-  const { user, getToken } = useAuth();
+  const user = useSelector((s: RootState) => s.me.user);
+  const sessionToken = useSelector((s: RootState) => s.me.sessionToken);
 
   const progressSteps = t("upload.progressSteps");
   const [loadingStartInterview, setLoadingStartInterview] = useState(false);
@@ -88,11 +90,10 @@ function UploadResumeContent() {
     // Get the authentication token first (needed for all API calls)
     let token: string;
     try {
-      const authToken = await getToken();
-      if (!authToken) {
+      if (!sessionToken) {
         throw new Error("Authentication token not available");
       }
-      token = authToken;
+      token = sessionToken;
 
       // Debug: Log token details
       console.log("🔐 Token received:", {
@@ -191,7 +192,7 @@ function UploadResumeContent() {
     // Save data to Supabase
     try {
       console.log("=== DEBUG: Saving to Supabase ===");
-      console.log("🔐 Auth context user email:", user?.email);
+      console.log("🔐 Redux user email:", user?.email);
       console.log("📧 Form email field value:", email);
       console.log("Data being sent:", {
         email,

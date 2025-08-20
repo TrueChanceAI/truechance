@@ -14,11 +14,6 @@ NEXT_PUBLIC_VAPI_WORKFLOW_ID=your_vapi_workflow_id_here
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url_here
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 NEXT_PUBLIC_APP_URL=http://localhost:3000
-NEXT_PUBLIC_KINDE_CLIENT_ID=your_kinde_client_id_here
-NEXT_PUBLIC_KINDE_ISSUER_URL=https://your-domain.kinde.com
-NEXT_PUBLIC_KINDE_LOGOUT_URL=http://localhost:3000
-NEXT_PUBLIC_KINDE_REDIRECT_URL=http://localhost:3000
-NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXX
 ```
 
 ## 📝 Instructions:

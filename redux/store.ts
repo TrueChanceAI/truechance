@@ -1,6 +1,7 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 
 import meSlice from "@/redux/slices/meSlice";
+import languageSlice from "@/redux/slices/languageSlice";
 
 import storage from "redux-persist/lib/storage";
 import { persistReducer, persistStore } from "redux-persist";
@@ -9,10 +10,12 @@ const persistConfig = {
   key: "root",
   version: 1,
   storage,
+  whitelist: ["me", "language"],
 };
 
 const reducer = combineReducers({
   me: meSlice,
+  language: languageSlice,
 });
 
 const persistedReducer = persistReducer(persistConfig, reducer);

@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { useTranslation } from "@/lib/contexts/TranslationContext";
+import { useLanguage } from "@/lib/hooks/useLanguage";
 
 interface LanguageOption {
   code: string;
@@ -29,7 +29,7 @@ const languages: LanguageOption[] = [
 
 export default function LanguageDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const { currentLang, setLanguage, t } = useTranslation();
+  const { currentLang, setLanguage, t } = useLanguage();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

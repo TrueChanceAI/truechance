@@ -1,12 +1,18 @@
 "use client";
-import { useTranslation } from "@/lib/contexts/TranslationContext";
+import { useDispatch, useSelector } from "react-redux";
+import type { RootState } from "@/redux/store";
+import { setLanguage } from "@/redux/slices/languageSlice";
+import { getTranslation } from "@/constants/translations";
 
 export const useLanguage = () => {
-  const { currentLang, setLanguage, t } = useTranslation();
+  const dispatch = useDispatch();
+  const currentLang = useSelector((s: RootState) => s.language.currentLang);
+
+  const t = (key: string): string => getTranslation(currentLang, key);
 
   return {
     currentLang,
-    setLanguage,
+    setLanguage: (lang: "en" | "ar") => dispatch(setLanguage(lang)),
     t,
   };
 };

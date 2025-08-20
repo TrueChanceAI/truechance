@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/lib/hooks/useLanguage";
-import { useAuth } from "@/lib/contexts/AuthContext";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/redux/store";
 import { AuthModal } from "@/components/AuthModal";
 import { UserMenu } from "@/components/UserMenu";
 import { Providers } from "@/components/Providers";
@@ -17,7 +18,7 @@ function HomeContent() {
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
   const router = useRouter();
   const { t, currentLang } = useLanguage();
-  const { user } = useAuth();
+  const user = useSelector((s: RootState) => s.me.user);
 
   const handleStart = () => {
     // Example: log a GA custom event for button click

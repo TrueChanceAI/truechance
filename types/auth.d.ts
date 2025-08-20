@@ -12,15 +12,7 @@ export interface AuthState {
   error: string | null;
 }
 
-export interface AuthContextType extends AuthState {
-  signUp: (email: string, password: string) => Promise<void>;
-  signIn: (email: string, password: string) => Promise<void>;
-  signInWithOAuth: (provider: "google" | "github") => Promise<void>;
-  signInWithMagicLink: (email: string) => Promise<void>;
-  signOut: () => Promise<void>;
-  resetPassword: (email: string) => Promise<void>;
-  getToken: () => Promise<string | undefined>;
-}
+// Deprecated AuthContextType (Kinde removed)
 
 export interface AuthModalProps {
   isOpen: boolean;

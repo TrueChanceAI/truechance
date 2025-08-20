@@ -15,7 +15,8 @@ import {
   getFeedbackByInterviewId,
   getInterviewById,
 } from "@/lib/actions/general.action";
-import { useAuth } from "@/lib/contexts/AuthContext";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/redux/store";
 import DisplayTechIcons from "@/components/DisplayTechIcons";
 
 interface RouteParams {
@@ -27,7 +28,7 @@ function InterviewContent({ params }: RouteParams) {
   const [interview, setInterview] = useState<any>(null);
   const [feedback, setFeedback] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const user = useSelector((s: RootState) => s.me.user);
 
   useEffect(() => {
     const getParams = async () => {
@@ -127,7 +128,7 @@ function InterviewContent({ params }: RouteParams) {
         </div>
 
         <Agent
-          userName={user?.given_name || user?.email || "User"}
+          userName={(user as any)?.name || user?.email || "User"}
           userId={user?.id}
           interviewId={id}
           type="interview"

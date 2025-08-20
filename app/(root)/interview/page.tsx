@@ -6,11 +6,13 @@ import Cookies from "js-cookie";
 import { useLanguage } from "@/lib/hooks/useLanguage";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/lib/contexts/AuthContext";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/redux/store";
 
 // Custom ProtectedRoute that checks both authentication and interview token
 function InterviewProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const user = useSelector((s: RootState) => s.me.user);
+  const loading = false;
   const router = useRouter();
   const [hasValidToken, setHasValidToken] = useState(false);
   const [isCheckingToken, setIsCheckingToken] = useState(true);

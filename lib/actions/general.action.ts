@@ -5,34 +5,43 @@ import { google } from "@ai-sdk/google";
 
 import { db } from "@/firebase/admin";
 import { feedbackSchema } from "@/constants";
-import { supabase } from '@/lib/supabase';
-import { revalidatePath } from 'next/cache';
+import { supabase } from "@/lib/supabase";
+import { revalidatePath } from "next/cache";
 
-// Helper function to convert Kinde ID to UUID format
+// Helper function to convert legacy ID to UUID format
 function convertKindeIdToUuid(kindeId: string): string {
   try {
     // Remove the 'kp_' prefix and convert to UUID format
-    const cleanId = kindeId.replace('kp_', '');
-    
+    const cleanId = kindeId.replace("kp_", "");
+
     // Ensure we have a valid 32-character hex string
     if (cleanId.length !== 32) {
-      throw new Error(`Invalid Kinde ID format: expected 32 characters after 'kp_', got ${cleanId.length}`);
+      throw new Error(
+        `Invalid Kinde ID format: expected 32 characters after 'kp_', got ${cleanId.length}`
+      );
     }
-    
+
     // Validate that it's a valid hex string
     if (!/^[0-9a-f]{32}$/i.test(cleanId)) {
-      throw new Error('Invalid Kinde ID format: not a valid hex string');
+      throw new Error("Invalid Kinde ID format: not a valid hex string");
     }
-    
+
     // Format as UUID: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
     // Note: We're setting version 4 and variant 1 as per UUID spec
-    const uuid = `${cleanId.slice(0, 8)}-${cleanId.slice(8, 12)}-4${cleanId.slice(13, 16)}-${cleanId.slice(16, 20)}-${cleanId.slice(20)}`;
-    
+    const uuid = `${cleanId.slice(0, 8)}-${cleanId.slice(
+      8,
+      12
+    )}-4${cleanId.slice(13, 16)}-${cleanId.slice(16, 20)}-${cleanId.slice(20)}`;
+
     console.log(`Converted Kinde ID "${kindeId}" to UUID "${uuid}"`);
     return uuid;
   } catch (error) {
-    console.error('Error converting Kinde ID to UUID:', error);
-    throw new Error(`Failed to convert Kinde ID "${kindeId}" to UUID: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    console.error("Error converting Kinde ID to UUID:", error);
+    throw new Error(
+      `Failed to convert Kinde ID "${kindeId}" to UUID: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`
+    );
   }
 }
 
@@ -101,94 +110,105 @@ export async function createFeedback(params: CreateFeedbackParams) {
   }
 }
 
-export async function updateUserProfile(userId: string, data: { first_name: string; last_name: string; email: string }) {
+export async function updateUserProfile(
+  userId: string,
+  data: { first_name: string; last_name: string; email: string }
+) {
   try {
-    console.log('Updating profile for user ID:', userId);
-    
+    console.log("Updating profile for user ID:", userId);
+
     // Validate Supabase connection
     if (!supabase) {
-      throw new Error('Supabase client not initialized');
+      throw new Error("Supabase client not initialized");
     }
-    
+
     let finalId: string;
-    
+
     try {
       // Try to convert Kinde ID to UUID format
       finalId = convertKindeIdToUuid(userId);
-      console.log('Converted UUID:', finalId);
+      console.log("Converted UUID:", finalId);
     } catch (conversionError) {
-      console.warn('UUID conversion failed, using original ID:', conversionError);
+      console.warn(
+        "UUID conversion failed, using original ID:",
+        conversionError
+      );
       // Fallback to using the original Kinde ID
       finalId = userId;
     }
-    
-    const { error } = await supabase
-      .from('users')
-      .upsert({
+
+    const { error } = await supabase.from("users").upsert(
+      {
         id: finalId,
         first_name: data.first_name,
         last_name: data.last_name,
         email: data.email,
-      }, {
-        onConflict: 'id'
-      });
+      },
+      {
+        onConflict: "id",
+      }
+    );
 
     if (error) {
-      console.error('Supabase error updating profile:', error);
+      console.error("Supabase error updating profile:", error);
       throw new Error(error.message);
     }
 
-    console.log('Profile updated successfully');
-    
+    console.log("Profile updated successfully");
+
     // Revalidate the profile page to show updated data
-    revalidatePath('/profile');
-    
+    revalidatePath("/profile");
+
     return { success: true };
   } catch (error) {
-    console.error('Profile update failed:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Failed to update profile' 
+    console.error("Profile update failed:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to update profile",
     };
   }
 }
 
 export async function getUserProfile(userId: string) {
   try {
-    console.log('Fetching profile for user ID:', userId);
-    
+    console.log("Fetching profile for user ID:", userId);
+
     // Validate Supabase connection
     if (!supabase) {
-      throw new Error('Supabase client not initialized');
+      throw new Error("Supabase client not initialized");
     }
-    
+
     let finalId: string;
-    
+
     try {
       // Try to convert Kinde ID to UUID format
       finalId = convertKindeIdToUuid(userId);
-      console.log('Converted UUID:', finalId);
+      console.log("Converted UUID:", finalId);
     } catch (conversionError) {
-      console.warn('UUID conversion failed, using original ID:', conversionError);
+      console.warn(
+        "UUID conversion failed, using original ID:",
+        conversionError
+      );
       // Fallback to using the original Kinde ID
       finalId = userId;
     }
-    
+
     const { data, error } = await supabase
-      .from('users')
-      .select('first_name, last_name')
-      .eq('id', finalId)
+      .from("users")
+      .select("first_name, last_name")
+      .eq("id", finalId)
       .single();
 
     if (error) {
-      console.error('Supabase error fetching profile:', error);
+      console.error("Supabase error fetching profile:", error);
       return null;
     }
 
-    console.log('Profile data fetched:', data);
+    console.log("Profile data fetched:", data);
     return data;
   } catch (error) {
-    console.error('Profile fetch failed:', error);
+    console.error("Profile fetch failed:", error);
     return null;
   }
 }

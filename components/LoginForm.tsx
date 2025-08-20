@@ -10,6 +10,8 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { useLanguage } from "@/lib/hooks/useLanguage";
+import { useDispatch } from "react-redux";
+import { setMe, setSessionToken } from "@/redux/slices/meSlice";
 
 interface LoginFormValues {
   email: string;
@@ -18,6 +20,7 @@ interface LoginFormValues {
 
 const LoginForm = () => {
   const { t } = useLanguage();
+  const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -28,14 +31,23 @@ const LoginForm = () => {
     setIsLoading(true);
 
     try {
-      // TODO: Implement actual login logic here
-      console.log("Login attempt:", values);
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // For now, just show success (replace with actual login logic)
-      console.log("Login successful");
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Login failed");
+      dispatch(
+        setMe({
+          id: data.user.id,
+          name: `${data.user.firstName} ${data.user.lastName}`.trim(),
+          email: data.user.email,
+          phoneNumber: data.user.phoneNumber,
+          isEmailVerified: data.user.isEmailVerified,
+        })
+      );
+      dispatch(setSessionToken(data.sessionToken));
     } catch (error) {
       setFieldError("general", "Login failed. Please try again.");
     } finally {
