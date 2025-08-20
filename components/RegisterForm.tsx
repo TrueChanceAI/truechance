@@ -13,34 +13,7 @@ import { Eye } from "lucide-react";
 import { EyeOff } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useSignUp } from "@/hooks/auth";
-
-// Validation schema using Yup
-const RegisterValidationSchema = Yup.object().shape({
-  firstName: Yup.string()
-    .min(2, "First name must be at least 2 characters")
-    .max(50, "First name must be less than 50 characters")
-    .required("First name is required"),
-  lastName: Yup.string()
-    .min(2, "Last name must be at least 2 characters")
-    .max(50, "Last name must be less than 50 characters")
-    .required("Last name is required"),
-  email: Yup.string()
-    .email("Please enter a valid email address")
-    .required("Email is required"),
-  phoneNumber: Yup.string()
-    .matches(/^[\+]?[1-9][\d]{0,15}$/, "Please enter a valid phone number")
-    .required("Phone number is required"),
-  password: Yup.string()
-    .min(8, "Password must be at least 8 characters")
-    .matches(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-      "Password must contain at least one uppercase letter, one lowercase letter, and one number"
-    )
-    .required("Password is required"),
-  confirmPassword: Yup.string()
-    .oneOf([Yup.ref("password")], "Passwords must match")
-    .required("Please confirm your password"),
-});
+import { RegisterSchema } from "@/validation/auth.validation";
 
 interface RegisterFormValues {
   firstName: string;
@@ -87,9 +60,13 @@ export default function RegisterForm({
       }
 
       onSuccess?.();
-    } catch (error) {
+    } catch (error: any) {
+      console.log(error.response.data);
       const errorMessage =
-        error instanceof Error ? error.message : "Registration failed";
+        error?.response?.data?.error ||
+        error?.response?.error ||
+        error?.message ||
+        "Something went wrong";
       setGeneralError(errorMessage);
     } finally {
       setSubmitting(false);
@@ -116,7 +93,7 @@ export default function RegisterForm({
           password: "",
           confirmPassword: "",
         }}
-        validationSchema={RegisterValidationSchema}
+        validationSchema={RegisterSchema}
         onSubmit={handleSubmit}
       >
         {({
@@ -384,7 +361,7 @@ export default function RegisterForm({
             {(error || generalError) && (
               <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
                 <p className="text-red-400 text-sm text-center">
-                  {error?.message || generalError || "Registration failed"}
+                  {generalError || error?.message || "Registration failed"}
                 </p>
               </div>
             )}

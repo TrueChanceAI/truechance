@@ -71,7 +71,7 @@ export const useSignUp = () => {
 
   const onError = (error: IAPIError) => {
     toast.error(
-      (error?.response as any)?.data?.message ||
+      (error?.response as any)?.data?.error ||
         (error?.response as any)?.message ||
         error?.message ||
         "Something went wrong"
@@ -104,7 +104,7 @@ export const useVerifyOtp = () => {
 
   const onError = (error: IAPIError) => {
     toast.error(
-      (error?.response as any)?.data?.message ||
+      (error?.response as any)?.data?.error ||
         (error?.response as any)?.message ||
         error?.message ||
         "Something went wrong"
@@ -134,7 +134,7 @@ export const useResendOtp = () => {
 
   const onError = (error: IAPIError) => {
     toast.error(
-      (error?.response as any)?.data?.message ||
+      (error?.response as any)?.data?.error ||
         (error?.response as any)?.message ||
         error?.message ||
         "Something went wrong"
