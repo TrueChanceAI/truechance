@@ -24,10 +24,12 @@ const PaymentSuccessModal: React.FC<PaymentSuccessModalProps> = ({
   const interviewId = searchParams.get("interviewId");
 
   const handleStartInterview = async () => {
+    console.log("Start Interview button clicked!", { interviewId, paymentId });
     setIsStarting(true);
 
     // Small delay for better UX
     setTimeout(() => {
+      console.log("Redirecting to interview...");
       router.push(
         `/interview?interviewId=${interviewId}&paymentId=${paymentId}`
       );
@@ -81,10 +83,17 @@ const PaymentSuccessModal: React.FC<PaymentSuccessModalProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 flex flex-col items-center gap-6 min-w-[320px] max-w-[400px] shadow-2xl border border-gray-100 dark:border-gray-700 animate-in fade-in-0 zoom-in-95 duration-300 relative overflow-hidden">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <div
+        className="bg-white dark:bg-gray-800 rounded-2xl p-8 flex flex-col items-center gap-6 min-w-[320px] max-w-[400px] shadow-2xl border border-gray-100 dark:border-gray-700 animate-in fade-in-0 zoom-in-95 duration-300 relative"
+        style={{
+          position: "relative",
+          zIndex: 10000,
+          pointerEvents: "auto",
+        }}
+      >
         {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-5">
+        <div className="absolute inset-0 opacity-5 pointer-events-none">
           <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-blue-500"></div>
         </div>
         {/* Success Icon with Animation */}
@@ -118,61 +127,87 @@ const PaymentSuccessModal: React.FC<PaymentSuccessModalProps> = ({
           </p>
         </div>
 
-        {/* Start Interview Button */}
-        <button
-          onClick={handleStartInterview}
-          disabled={isStarting}
-          className="w-full py-4 px-6 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-red-300 dark:focus:ring-red-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-base bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 shadow-md"
+        {/* Test Clickable Area */}
+        <div
+          className="w-full h-4 bg-blue-500 cursor-pointer mb-2"
+          onClick={() => console.log("Test div clicked")}
+          style={{ zIndex: 20 }}
         >
-          {isStarting ? (
-            <div className="flex items-center justify-center">
-              <svg
-                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
+          Test Click Area
+        </div>
+
+        {/* Start Interview Button */}
+        <div
+          className="relative z-10 w-full"
+          style={{ position: "relative", zIndex: 10 }}
+        >
+          <button
+            onClick={handleStartInterview}
+            onMouseEnter={() => console.log("Button hovered")}
+            onMouseDown={() => console.log("Button mousedown")}
+            onTouchStart={() => console.log("Button touch start")}
+            disabled={isStarting}
+            type="button"
+            className="w-full py-4 px-6 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-red-300 dark:focus:ring-red-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-base bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 shadow-md cursor-pointer"
+            style={{
+              position: "relative",
+              pointerEvents: "auto",
+              userSelect: "none",
+              touchAction: "manipulation",
+            }}
+          >
+            {isStarting ? (
+              <div className="flex items-center justify-center">
+                <svg
+                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Starting Interview...
+              </div>
+            ) : (
+              <div className="flex items-center justify-center">
+                <svg
+                  className="w-5 h-5 mr-2"
+                  fill="none"
                   stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              Starting Interview...
-            </div>
-          ) : (
-            <div className="flex items-center justify-center">
-              <svg
-                className="w-5 h-5 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              Start Interview Now
-            </div>
-          )}
-        </button>
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                Start Interview Now
+              </div>
+            )}
+          </button>
+        </div>
 
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium transition-all duration-200 text-sm px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+          type="button"
+          className="relative z-10 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium transition-all duration-200 text-sm px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+          style={{ position: "relative", zIndex: 10 }}
         >
           <div className="flex items-center">
             <svg
