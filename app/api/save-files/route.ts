@@ -378,7 +378,7 @@ export async function POST(req: NextRequest) {
       // Return the interview_id so the frontend can store it
       return NextResponse.json({
         success: true,
-        interview_id: supabaseData.interview_id,
+        interview_id: supabaseData.id,
       });
     }
   } catch (error) {

@@ -256,8 +256,8 @@ function UploadResumeContent() {
           resumeFile: base64Data,
           resumeFileName: file.name,
           resumeFileType: file.type,
-          // Add authenticated user's email for ownership verification
           authenticatedUserEmail: user?.email,
+          interviewQuestions: questions,
         }),
       });
 
@@ -269,10 +269,12 @@ function UploadResumeContent() {
         const saveData = await saveRes.json();
         console.log("✅ Data saved to Supabase successfully");
 
+        console.log("saveData", saveData);
+
         // Store the interview_id for later use in save-interview
-        if (saveData.interview_id) {
-          sessionStorage.setItem("initialInterviewId", saveData.interview_id);
-          console.log("🔑 Stored initial interview_id:", saveData.interview_id);
+        if (saveData.id) {
+          sessionStorage.setItem("initialInterviewId", saveData.id);
+          console.log("🔑 Stored initial interview_id:", saveData.id);
         }
 
         // Add a small delay to ensure the database transaction is committed
@@ -288,24 +290,6 @@ function UploadResumeContent() {
     setShowProgress(false);
     // Show payment form directly instead of the start interview modal
     setShowPaymentForm(true);
-
-    // Store interview data in session storage for the payment flow
-    const interviewToken = Math.random().toString(36).substring(2);
-    Cookies.set("interviewToken", interviewToken, { expires: 1 });
-    sessionStorage.setItem("interviewToken", interviewToken);
-
-    // Store other required data
-    sessionStorage.setItem("interviewQuestions", JSON.stringify(questions));
-    sessionStorage.setItem("interviewLanguage", language);
-    sessionStorage.setItem("candidateName", candidateName);
-    sessionStorage.setItem("resumeEmail", email);
-    sessionStorage.setItem("resumeFileContent", resumeText);
-
-    // Generate a unique interview ID
-    const interviewId = `interview_${Date.now()}_${Math.random()
-      .toString(36)
-      .substring(2)}`;
-    sessionStorage.setItem("currentInterviewId", interviewId);
   };
 
   // Handle payment success

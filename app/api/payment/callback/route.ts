@@ -146,11 +146,24 @@ export async function GET(req: NextRequest) {
           `Payment details: Amount: ${responseData?.responseBody?.order?.amount} ${responseData?.responseBody?.order?.currency}, Status: ${responseData?.responseBody?.status}`
         );
 
+        // update interview to link to payment order
+        const { error: updateInterviewError } = await supabaseServer
+          .from("interviews")
+          .update({ payment_id: paymentId })
+          .eq("id", payment_order.interview_id);
+
+        if (updateInterviewError) {
+          console.error("Failed to update interview:", updateInterviewError);
+        }
+
         const url = process.env.NEXT_PUBLIC_APP_URL;
         // Redirect user based on payment status
         // ?paymentId=1234567890
         return NextResponse.redirect(
-          new URL(`${redirectUrl}?paymentId=${paymentId}`, url)
+          new URL(
+            `${redirectUrl}?paymentId=${paymentId}&interviewId=${payment_order.interview_id}`,
+            url
+          )
         );
       } catch (parseError) {
         console.error("Failed to parse payment status:", parseError);
@@ -158,7 +171,10 @@ export async function GET(req: NextRequest) {
 
         // If we can't parse the status, redirect to payment failed
         return NextResponse.redirect(
-          new URL(`/payment-failed?paymentId=${paymentId}`, url)
+          new URL(
+            `/payment-failed?paymentId=${paymentId}&interviewId=${payment_order.interview_id}`,
+            url
+          )
         );
       }
     } else {
@@ -167,7 +183,10 @@ export async function GET(req: NextRequest) {
       const url = process.env.NEXT_PUBLIC_APP_URL;
 
       return NextResponse.redirect(
-        new URL(`/payment-failed?paymentId=${paymentId}`, url)
+        new URL(
+          `/payment-failed?paymentId=${paymentId}&interviewId=${payment_order.interview_id}`,
+          url
+        )
       );
     }
   } catch (error) {

@@ -9,7 +9,6 @@ import { getRandomInterviewCover } from "@/lib/utils";
 import { getInterviewerConfig } from "@/constants";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { UserMenu } from "@/components/UserMenu";
-import { Providers } from "@/components/Providers";
 
 import {
   getFeedbackByInterviewId,

@@ -5,101 +5,28 @@ import { getInterviewerConfig } from "@/constants";
 import Cookies from "js-cookie";
 import { useLanguage } from "@/hooks/useLanguage";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
+import { useGetInterviewById } from "@/hooks/interview";
 
 // Custom ProtectedRoute that checks both authentication and interview token
 function InterviewProtectedRoute({ children }: { children: React.ReactNode }) {
+  const searchParams = useSearchParams();
+  const interviewId = searchParams.get("interviewId");
+
   const user = useSelector((s: RootState) => s.me.user);
-  const loading = false;
   const router = useRouter();
   const [hasValidToken, setHasValidToken] = useState(false);
   const [isCheckingToken, setIsCheckingToken] = useState(true);
 
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push("/");
-      return;
-    }
+  const {
+    interview,
+    isLoading: isLoadingInterview,
+    isError: isErrorInterview,
+  } = useGetInterviewById(interviewId as string);
 
-    if (user && !loading) {
-      // Check for interview token in both cookies and sessionStorage
-      const cookieToken = Cookies.get("interviewToken");
-      const sessionToken = sessionStorage.getItem("interviewToken");
-
-      // Also check for the required resume data
-      const storedQuestions = sessionStorage.getItem("interviewQuestions");
-      const storedLanguage = sessionStorage.getItem("interviewLanguage");
-      const storedName = sessionStorage.getItem("candidateName");
-      const storedEmail = sessionStorage.getItem("resumeEmail");
-      const storedResumeFile = sessionStorage.getItem("resumeFileContent");
-
-      // Check for payment verification
-      const currentPaymentId = sessionStorage.getItem("currentPaymentId");
-
-      console.log("Token validation:", {
-        cookieToken: !!cookieToken,
-        sessionToken: !!sessionToken,
-        hasQuestions: !!storedQuestions,
-        hasLanguage: !!storedLanguage,
-        hasName: !!storedName,
-        hasEmail: !!storedEmail,
-        hasResumeFile: !!storedResumeFile,
-        hasPaymentId: !!currentPaymentId,
-      });
-
-      console.log("SessionStorage contents:", {
-        resumeEmail: storedEmail,
-        candidateName: storedName,
-        resumeFileLength: storedResumeFile ? storedResumeFile.length : 0,
-        paymentId: currentPaymentId,
-      });
-
-      // Must have both valid token AND resume data AND payment verification
-      if (
-        !cookieToken ||
-        !sessionToken ||
-        !storedQuestions ||
-        !storedLanguage ||
-        !storedName ||
-        !currentPaymentId
-      ) {
-        console.log(
-          "Missing required data or payment verification, redirecting to upload-resume"
-        );
-        // Missing token, resume data, or payment verification, redirect immediately
-        router.push("/upload-resume");
-        return;
-      }
-
-      // Validate the questions data
-      try {
-        const parsedQuestions = JSON.parse(storedQuestions);
-        if (
-          !parsedQuestions ||
-          !Array.isArray(parsedQuestions) ||
-          parsedQuestions.length === 0
-        ) {
-          console.log("Invalid questions data, redirecting to upload-resume");
-          // Invalid or empty questions, redirect
-          router.push("/upload-resume");
-          return;
-        }
-
-        console.log("All validations passed, allowing interview access");
-        // All validations passed
-        setHasValidToken(true);
-        setIsCheckingToken(false);
-      } catch (error) {
-        console.log("JSON parsing error, redirecting to upload-resume");
-        // Invalid JSON, redirect
-        router.push("/upload-resume");
-      }
-    }
-  }, [user, loading, router]);
-
-  if (loading || isCheckingToken) {
+  if (isLoadingInterview || isCheckingToken) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
         <div className="bg-zinc-900 rounded-2xl p-6 sm:p-8 flex flex-col items-center gap-4 min-w-[280px] sm:min-w-[320px] relative shadow-xl mx-4">
@@ -120,7 +47,7 @@ function InterviewProtectedRoute({ children }: { children: React.ReactNode }) {
             />
           </svg>
           <span className="text-base sm:text-lg font-medium text-white text-center">
-            {loading
+            {isLoadingInterview
               ? "Checking authentication..."
               : "Validating interview access..."}
           </span>
@@ -129,60 +56,56 @@ function InterviewProtectedRoute({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!user || !hasValidToken) {
+  if (!user || !interview) {
     return null; // Will redirect in useEffect
+  }
+
+  if (isErrorInterview) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+        <div className="bg-zinc-900 rounded-2xl p-6 sm:p-8 flex flex-col items-center gap-4 min-w-[280px] sm:min-w-[320px] relative shadow-xl mx-4">
+          <div className="w-16 h-16 bg-red-900/20 rounded-full flex items-center justify-center">
+            <svg
+              className="w-8 h-8 text-red-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-white text-center">
+            Error Loading Interview
+          </h2>
+          <p className="text-sm text-gray-300 text-center">
+            There was a problem loading the interview. Please try again later.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-2 px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return <>{children}</>;
 }
 
 function InterviewPageContent() {
-  const [questions, setQuestions] = useState<string[]>([]);
-  const [language, setLanguage] = useState("en");
-  const [showWarning, setShowWarning] = useState(false);
-  const [interviewerConfig, setInterviewerConfig] = useState(
-    getInterviewerConfig("en")
-  );
-  const [candidateName, setCandidateName] = useState("Candidate");
+  const searchParams = useSearchParams();
+  const interviewId = searchParams.get("interviewId");
+  const { interview } = useGetInterviewById(interviewId as string);
+
   const { t } = useLanguage();
-
-  useEffect(() => {
-    // Load the resume data that we already validated
-    const storedQuestions = sessionStorage.getItem("interviewQuestions");
-    const storedLanguage = sessionStorage.getItem("interviewLanguage");
-    const storedName = sessionStorage.getItem("candidateName");
-
-    if (storedQuestions && storedLanguage && storedName) {
-      setQuestions(JSON.parse(storedQuestions));
-      setLanguage(storedLanguage);
-      setCandidateName(storedName);
-      setInterviewerConfig(getInterviewerConfig(storedLanguage, storedName));
-    }
-  }, []);
-
-  useEffect(() => {
-    // Clear the interviewToken cookie AFTER the interview content has loaded
-    // This prevents the token from being cleared before validation
-    const timer = setTimeout(() => {
-      Cookies.remove("interviewToken");
-      console.log("Interview token cleared after successful load");
-    }, 1000); // Small delay to ensure everything is loaded
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    // Consistency check: if questions exist, check if they match the selected language
-    if (questions.length > 0 && language) {
-      // Simple heuristic: check if first question contains Arabic characters if language is ar
-      const isArabic = /[\u0600-\u06FF]/.test(questions[0]);
-      if ((language === "ar" && !isArabic) || (language !== "ar" && isArabic)) {
-        setShowWarning(true);
-      } else {
-        setShowWarning(false);
-      }
-    }
-  }, [questions, language]);
 
   return (
     <div className="px-4 sm:px-0">
@@ -190,10 +113,13 @@ function InterviewPageContent() {
         {t("interview.title")}
       </h3>
       <Agent
-        questions={questions}
+        questions={interview?.interview_questions}
         type="interview"
-        userName={candidateName}
-        interviewerConfig={interviewerConfig}
+        userName={interview?.candidate_name || ""}
+        interviewerConfig={getInterviewerConfig(
+          interview?.language,
+          interview?.candidate_name
+        )}
       />
     </div>
   );

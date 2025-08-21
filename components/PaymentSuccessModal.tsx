@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useLanguage } from "@/hooks/useLanguage";
 
 interface PaymentSuccessModalProps {
@@ -18,18 +18,16 @@ const PaymentSuccessModal: React.FC<PaymentSuccessModalProps> = ({
   const router = useRouter();
   const { t } = useLanguage();
   const [isStarting, setIsStarting] = useState(false);
-
+  const searchParams = useSearchParams();
+  const interviewId = searchParams.get("interviewId");
   if (!isOpen) return null;
 
   const handleStartInterview = async () => {
     setIsStarting(true);
 
-    // Store the payment ID in session storage for the interview
-    sessionStorage.setItem("currentPaymentId", paymentId);
-
     // Small delay for better UX
     setTimeout(() => {
-      router.push("/interview");
+      router.push(`/interview?interviewId=${interviewId}`);
     }, 500);
   };
 
