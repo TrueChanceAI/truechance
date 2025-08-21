@@ -1,3 +1,8 @@
+export const LANGUAGES = [
+  { code: "en", labelEn: "English", labelAr: "الإنجليزية" },
+  { code: "ar", labelEn: "Arabic", labelAr: "العربية" },
+];
+
 export interface Translations {
   home: {
     title: string;
@@ -69,6 +74,8 @@ export interface Translations {
     startInterviewText: string;
     readyToStartText: string;
     progressSteps: string[];
+    processingInProgress: string;
+    pdfOnlyText: string;
     termsAcceptText: string;
     termsLinkText: string;
     termsErrorText: string;
@@ -257,7 +264,10 @@ export const translations: Record<string, Translations> = {
         "Analyzing your CV…",
         "Analyzing your skills…",
         "Generating questions…",
+        "Initializing Interview",
       ],
+      processingInProgress: "Processing in progress...",
+      pdfOnlyText: "PDF only (max 10MB)",
       termsAcceptText:
         "I accept the Terms and Conditions and agree to the processing of my data for interview purposes.",
       termsLinkText: "Terms and Conditions",
@@ -468,7 +478,10 @@ export const translations: Record<string, Translations> = {
         "جاري تحليل سيرتك الذاتية…",
         "جاري تحليل مهاراتك…",
         "جاري إنشاء الأسئلة…",
+        "تهيئة المقابلة",
       ],
+      processingInProgress: "جاري المعالجة...",
+      pdfOnlyText: "PDF فقط (الحد الأقصى 10 ميجابايت)",
       termsAcceptText:
         "أوافق على الشروط والأحكام وأوافق على معالجة بياناتي لأغراض المقابلة.",
       termsLinkText: "الشروط والأحكام",

@@ -18,7 +18,9 @@ const rateLimiter = createRateLimiter(10, 15 * 60 * 1000);
 // Get presigned URL from PDF.co
 async function getPresignedUrl(fileName: string): Promise<[string, string]> {
   return new Promise((resolve, reject) => {
-    const queryPath = `/v1/file/upload/get-presigned-url?contenttype=application/octet-stream&name=${encodeURIComponent(fileName)}`;
+    const queryPath = `/v1/file/upload/get-presigned-url?contenttype=application/octet-stream&name=${encodeURIComponent(
+      fileName
+    )}`;
     const options = {
       host: "api.pdf.co",
       path: queryPath,
@@ -26,15 +28,17 @@ async function getPresignedUrl(fileName: string): Promise<[string, string]> {
       headers: { "x-api-key": API_KEY },
     };
 
-    https.get(options, (res) => {
-      let body = "";
-      res.on("data", (chunk) => (body += chunk));
-      res.on("end", () => {
-        const json = JSON.parse(body);
-        if (!json.error) resolve([json.presignedUrl, json.url]);
-        else reject(json.message);
-      });
-    }).on("error", reject);
+    https
+      .get(options, (res) => {
+        let body = "";
+        res.on("data", (chunk) => (body += chunk));
+        res.on("end", () => {
+          const json = JSON.parse(body);
+          if (!json.error) resolve([json.presignedUrl, json.url]);
+          else reject(json.message);
+        });
+      })
+      .on("error", reject);
   });
 }
 
@@ -53,7 +57,10 @@ async function uploadFileWithFetch(localPath: string, uploadUrl: string) {
 // Request PDF text extraction
 function convertPdfToText(uploadedFileUrl: string): Promise<string> {
   return new Promise((resolve, reject) => {
-    const payload = JSON.stringify({ name: "result.txt", url: uploadedFileUrl });
+    const payload = JSON.stringify({
+      name: "result.txt",
+      url: uploadedFileUrl,
+    });
     const options = {
       host: "api.pdf.co",
       path: "/v1/pdf/convert/to/text",
@@ -86,11 +93,13 @@ export async function POST(req: NextRequest) {
     // Authentication check
     const authResult = await requireAuth(req);
     if (!authResult.user) {
-      return createUnauthorizedResponse(authResult.error || "Authentication required");
+      return createUnauthorizedResponse(
+        authResult.error || "Authentication required"
+      );
     }
-    
+
     // Rate limiting
-    const clientIP = req.ip || req.headers.get('x-forwarded-for') || 'unknown';
+    const clientIP = req.headers.get("x-forwarded-for") || "unknown";
     if (!rateLimiter(clientIP)) {
       return NextResponse.json(
         { error: "Too many requests. Please try again later." },
@@ -101,7 +110,7 @@ export async function POST(req: NextRequest) {
     // Get form data
     const form = await req.formData();
     const file = form.get("file") as File | null;
-    
+
     // Validate file
     const fileValidation = validateFileUpload(file);
     if (!fileValidation.isValid) {
@@ -117,15 +126,21 @@ export async function POST(req: NextRequest) {
     }
 
     const validatedFile = fileValidation.sanitizedData;
-    
+
     // Check file size again server-side
     if (validatedFile.size > 10 * 1024 * 1024) {
-      return NextResponse.json({ error: "File size exceeds 10MB limit" }, { status: 400 });
+      return NextResponse.json(
+        { error: "File size exceeds 10MB limit" },
+        { status: 400 }
+      );
     }
 
     // Check MIME type server-side
-    if (validatedFile.type !== 'application/pdf') {
-      return NextResponse.json({ error: "Only PDF files are allowed" }, { status: 400 });
+    if (validatedFile.type !== "application/pdf") {
+      return NextResponse.json(
+        { error: "Only PDF files are allowed" },
+        { status: 400 }
+      );
     }
 
     const arrayBuffer = await validatedFile.arrayBuffer();
@@ -133,11 +148,15 @@ export async function POST(req: NextRequest) {
     await fs.writeFile(tempPath, Buffer.from(arrayBuffer));
 
     try {
-      const [uploadUrl, uploadedFileUrl] = await getPresignedUrl(validatedFile.name);
+      const [uploadUrl, uploadedFileUrl] = await getPresignedUrl(
+        validatedFile.name
+      );
       await uploadFileWithFetch(tempPath, uploadUrl);
       const result = await convertPdfToText(uploadedFileUrl);
 
-      const text = result.startsWith("http") ? await (await fetch(result)).text() : result;
+      const text = result.startsWith("http")
+        ? await (await fetch(result)).text()
+        : result;
 
       // Use Gemini to extract the candidate's name from the resume text
       const { text: geminiResult } = await generateText({
@@ -151,7 +170,10 @@ export async function POST(req: NextRequest) {
       let resumeText = text;
       let cleaned = geminiResult.trim();
       if (cleaned.startsWith("```")) {
-        cleaned = cleaned.replace(/^```(json)?/i, "").replace(/```$/, "").trim();
+        cleaned = cleaned
+          .replace(/^```(json)?/i, "")
+          .replace(/```$/, "")
+          .trim();
       }
       try {
         const parsed = JSON.parse(cleaned);

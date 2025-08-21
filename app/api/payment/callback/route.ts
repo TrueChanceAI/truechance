@@ -149,7 +149,7 @@ export async function GET(req: NextRequest) {
         // update interview to link to payment order
         const { error: updateInterviewError } = await supabaseServer
           .from("interviews")
-          .update({ payment_id: paymentId })
+          .update({ payment_id: paymentId, payment_status: "completed" })
           .eq("id", payment_order.interview_id);
 
         if (updateInterviewError) {

@@ -18,7 +18,8 @@ function ProfileContent() {
           <div className="bg-zinc-900 rounded-2xl p-8 border border-zinc-700">
             <div className="flex items-center gap-4 mb-8">
               <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-600 to-blue-500 flex items-center justify-center text-white font-bold text-2xl">
-                {user.name?.[0]?.toUpperCase() || user.email[0].toUpperCase()}
+                {user.firstName?.[0]?.toUpperCase() ||
+                  user.email[0].toUpperCase()}
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-white">
@@ -41,13 +42,13 @@ function ProfileContent() {
                 </p>
               </div>
 
-              {user.name && (
+              {user.firstName && (
                 <div>
                   <h3 className="text-white text-sm font-medium mb-2">
                     {t("profile.firstName")}
                   </h3>
                   <div className="bg-zinc-800 border border-zinc-700 text-zinc-300 p-3 rounded-lg">
-                    {user.name}
+                    {user.firstName}
                   </div>
                 </div>
               )}

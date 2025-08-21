@@ -1,3 +1,5 @@
+import { IAPIResponse } from "./api";
+
 export interface PaymentOrder {
   id: string;
   user_id: string;
@@ -34,7 +36,7 @@ export interface PaymentInitiateRequest {
   userIP: string;
 }
 
-export interface PaymentInitiateResponse {
+export interface PaymentInitiateResponse extends IAPIResponse {
   success: boolean;
   redirectUrl?: string;
   paymentId?: string;
@@ -75,3 +77,11 @@ export interface PaymentCallbackData {
   currency?: string;
   transactionId?: string;
 }
+
+export type TInitiatePaymentService = (
+  payload: PaymentInitiateRequest
+) => Promise<PaymentInitiateResponse>;
+
+export type TCheckPaymentStatusService = (
+  paymentId: string
+) => Promise<PaymentStatusResponse>;

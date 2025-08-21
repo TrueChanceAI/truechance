@@ -2,123 +2,77 @@
 
 import React, { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
-import * as Yup from "yup";
-import { useLanguage } from "@/hooks/useLanguage";
+import { AddressValidationSchema } from "@/validation/common.validation";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
-import { PaymentService } from "@/services/payment";
-import type { BillingAddress } from "@/types/payment";
-
-// Function to get user's actual IP address
-const getUserIP = async (): Promise<string> => {
-  try {
-    // Try to get IP from multiple sources
-    const response = await fetch("https://api.ipify.org?format=json");
-    const data = await response.json();
-    return data.ip;
-  } catch (error) {
-    console.warn("Failed to get IP from ipify, using fallback");
-    // Fallback: try to get from other services
-    try {
-      const response = await fetch("https://api64.ipify.org?format=json");
-      const data = await response.json();
-      return data.ip;
-    } catch (fallbackError) {
-      console.warn("Failed to get IP from fallback service");
-      return "127.0.0.1"; // Default fallback
-    }
-  }
-};
+import { useInitiatePayment } from "@/hooks/payment";
+import { IAddress } from "@/types/common";
+import { getUserIP } from "@/utils/getIP";
 
 interface PaymentFormProps {
   onPaymentSuccess: (paymentId: string) => void;
   onPaymentError: (error: string) => void;
   onClose: () => void;
-  isLoading?: boolean;
   interviewId: string;
 }
-
-interface AddressFormData extends BillingAddress {}
-
-const addressValidationSchema = Yup.object().shape({
-  address: Yup.string()
-    .min(10, "Address must be at least 10 characters")
-    .required("Address is required"),
-  city: Yup.string()
-    .min(2, "City must be at least 2 characters")
-    .required("City is required"),
-  country: Yup.string()
-    .min(2, "Country must be at least 2 characters")
-    .required("Country is required"),
-  zip: Yup.string()
-    .min(3, "ZIP code must be at least 3 characters")
-    .max(10, "ZIP code must be at most 10 characters")
-    .required("ZIP code is required"),
-});
 
 const PaymentForm: React.FC<PaymentFormProps> = ({
   onPaymentSuccess,
   onPaymentError,
   onClose,
-  isLoading = false,
   interviewId,
 }) => {
-  const { t } = useLanguage();
+  const { initiatePayment, isLoading, isSuccess, isError, error } =
+    useInitiatePayment();
+
   const user = useSelector((state: RootState) => state.me.user);
-  const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState<string>("");
 
-  const handleSubmit = async (values: AddressFormData) => {
+  const handleSubmit = async (values: IAddress) => {
     if (!user) {
       onPaymentError("User not authenticated");
       return; // Don't close modal, just show error
     }
 
-    setIsProcessing(true);
     try {
       if (!interviewId) {
         throw new Error("Interview not initialized");
       }
 
-      // Get user's IP address
       const userIP = await getUserIP();
 
-      // Initiate payment
-      const response = await PaymentService.initiatePayment({
+      initiatePayment({
         interviewId,
         address: values,
-        userIP, // Include user's IP address
+        userIP,
+      }).then((response) => {
+        if (response.success && response.redirectUrl) {
+          // Store payment ID for later use
+          const paymentId =
+            response.redirectUrl.split("paymentId=")[1] || "unknown";
+
+          // Clear any previous errors
+          setPaymentError("");
+
+          // Notify parent in case it needs to track the payment id
+          try {
+            onPaymentSuccess(paymentId);
+          } catch {}
+
+          // Redirect to payment gateway
+          // window.location.href = response.redirectUrl;
+        } else {
+          throw new Error("Invalid payment response");
+        }
       });
-
-      if (response.success && response.redirectUrl) {
-        // Store payment ID for later use
-        const paymentId =
-          response.redirectUrl.split("paymentId=")[1] || "unknown";
-
-        // Clear any previous errors
-        setPaymentError("");
-
-        // Notify parent in case it needs to track the payment id
-        try {
-          onPaymentSuccess(paymentId);
-        } catch {}
-
-        // Redirect to payment gateway
-        window.location.href = response.redirectUrl;
-      } else {
-        throw new Error("Invalid payment response");
-      }
     } catch (error: any) {
       console.error("Payment error:", error);
       setPaymentError(error.message || "Payment failed");
       onPaymentError(error.message || "Payment failed");
-      // Don't close modal on error, let user fix the issue
-    } finally {
-      setIsProcessing(false);
     }
   };
 
-  const initialValues: AddressFormData = {
+  const initialValues: IAddress = {
     address: "",
     city: "",
     country: "",
@@ -163,7 +117,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
 
         <Formik
           initialValues={initialValues}
-          validationSchema={addressValidationSchema}
+          validationSchema={AddressValidationSchema}
           onSubmit={handleSubmit}
           onReset={() => setPaymentError("")}
         >
@@ -278,11 +232,11 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
               {/* Payment Button */}
               <button
                 type="submit"
-                disabled={!isValid || !dirty || isProcessing || isLoading}
+                disabled={!isValid || !dirty || isLoading}
                 className="w-full py-3 px-4 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-300 dark:focus:ring-red-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm"
                 style={{ backgroundColor: "#E53935" }}
               >
-                {isProcessing ? (
+                {isLoading ? (
                   <div className="flex items-center justify-center">
                     <svg
                       className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"

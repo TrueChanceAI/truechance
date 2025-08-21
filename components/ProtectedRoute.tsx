@@ -52,6 +52,7 @@ export function ProtectedRoute({ children, fallback }: ProtectedRouteProps) {
   }
 
   if (!user) {
+    console.log("user not found");
     return null; // Will redirect in useEffect
   }
 

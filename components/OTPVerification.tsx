@@ -6,21 +6,17 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import OTPInput from "./OTPInput";
 import { useVerifyOtp, useResendOtp } from "@/hooks/auth";
+import { useRouter } from "next/navigation";
 
 export default function OTPVerification() {
+  const router = useRouter();
+  const userId = localStorage.getItem("userId");
+  const email = localStorage.getItem("email");
+
   const [otp, setOtp] = useState("");
-  const [email, setEmail] = useState("");
-  const [userId, setUserId] = useState("");
 
   const { verifyOtp, isLoading: isVerifying } = useVerifyOtp();
   const { resendOtp, isLoading: isResending } = useResendOtp();
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setEmail(localStorage.getItem("email") || "");
-      setUserId(localStorage.getItem("userId") || "");
-    }
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,6 +51,10 @@ export default function OTPVerification() {
   };
 
   const isLoading = isVerifying || isResending;
+
+  if (!email || !userId) {
+    router.push("/");
+  }
 
   return (
     <div className="space-y-6">

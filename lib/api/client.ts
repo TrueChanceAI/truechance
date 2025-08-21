@@ -42,4 +42,11 @@ clientApi.interceptors.response.use(
   }
 );
 
+export const queryRetry = (failureCount: number, err: any) => {
+  if (err?.response?.status === 404) {
+    return false;
+  }
+  return failureCount < 3;
+};
+
 export default clientApi;
