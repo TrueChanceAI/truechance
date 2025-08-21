@@ -8,6 +8,15 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
 
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "flagcdn.com",
+      },
+    ],
+  },
+
   async headers() {
     const isDevelopment = process.env.NODE_ENV === "development";
 
@@ -26,14 +35,14 @@ const nextConfig: NextConfig = {
       frame-ancestors 'none';
     `;
 
-    // Production CSP: includes GA + Fonts
+    // Production CSP: stricter
     const prodCsp = `
       default-src 'self';
       script-src 'self' 'unsafe-eval' 'unsafe-inline' blob: https://www.googletagmanager.com;
       style-src 'self' 'unsafe-inline' blob: https://fonts.googleapis.com;
       font-src 'self' https://fonts.gstatic.com;
       connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com;
-      img-src 'self' data: https://www.googletagmanager.com https://www.google-analytics.com;
+      img-src 'self' data: https://www.googletagmanager.com https://www.google-analytics.com https://flagcdn.com;
       media-src 'self' blob: data:;
       worker-src 'self' blob:;
       child-src 'self' blob:;

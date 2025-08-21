@@ -53,7 +53,7 @@ export default function LanguageDropdown() {
   }, [isOpen]);
 
   const handleLanguageChange = (langCode: string) => {
-    setLanguage(langCode);
+    setLanguage(langCode as "en" | "ar");
     setIsOpen(false);
   };
 
@@ -81,7 +81,7 @@ export default function LanguageDropdown() {
             {languages.map((lang) => (
               <button
                 key={lang.code}
-                className={`block w-full text-left px-4 py-2 flex items-center hover:text-white hover:bg-[#a75717] transition-colors ${
+                className={`w-full text-left px-4 py-2 flex items-center hover:text-white hover:bg-[#a75717] transition-colors ${
                   currentLang === lang.code
                     ? "bg-[#a75717] text-white"
                     : "text-gray-900 dark:text-white"
