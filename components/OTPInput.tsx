@@ -117,7 +117,7 @@ export default function OTPInput({
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-center gap-3">
+      <div className="grid grid-cols-6 gap-1 sm:gap-2 md:gap-3 w-full">
         {otp.map((digit, index) => (
           <div key={index} className="relative">
             <input
@@ -134,7 +134,7 @@ export default function OTPInput({
               onPaste={handlePaste}
               onFocus={() => handleInputFocus(index)}
               className={cn(
-                "w-14 h-14 text-center text-2xl font-bold bg-white/10 border-2 border-white/20 text-white rounded-xl",
+                "w-full aspect-square text-center text-lg sm:text-xl md:text-2xl font-bold bg-white/10 border border-white/20 md:border-2 text-white rounded-xl box-border",
                 "focus:bg-white/20 focus:border-purple-400 focus:outline-none",
                 "transition-all duration-200",
                 "placeholder:text-white/30",
@@ -144,6 +144,8 @@ export default function OTPInput({
               )}
               placeholder="•"
               disabled={disabled}
+              autoComplete="one-time-code"
+              aria-label={`Digit ${index + 1} of ${length}`}
             />
 
             {/* Active indicator */}
