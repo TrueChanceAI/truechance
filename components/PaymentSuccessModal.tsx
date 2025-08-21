@@ -127,15 +127,6 @@ const PaymentSuccessModal: React.FC<PaymentSuccessModalProps> = ({
           </p>
         </div>
 
-        {/* Test Clickable Area */}
-        <div
-          className="w-full h-4 bg-blue-500 cursor-pointer mb-2"
-          onClick={() => console.log("Test div clicked")}
-          style={{ zIndex: 20 }}
-        >
-          Test Click Area
-        </div>
-
         {/* Start Interview Button */}
         <div
           className="relative z-10 w-full"
