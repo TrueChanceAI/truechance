@@ -41,6 +41,7 @@ export async function POST(req: NextRequest) {
     const { first_name, last_name, email, phone_number } = user;
     const ip = req.headers.get("x-forwarded-for");
     const description = `Interview payment for ${interviewId}`;
+    const amount = 1;
 
     if (!ip) {
       return NextResponse.json(
@@ -54,7 +55,7 @@ export async function POST(req: NextRequest) {
         .from("payment_orders")
         .insert({
           user_id: user.id,
-          amount: 49,
+          amount,
           interview_id: interviewId,
         })
         .select()
@@ -79,7 +80,7 @@ export async function POST(req: NextRequest) {
         isEmailVerified: user.is_email_verified,
       },
       address,
-      amount: 49,
+      amount,
       description,
       paymentId: payment_order.id,
       ip,

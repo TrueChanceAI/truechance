@@ -15,7 +15,8 @@ export interface Interview {
   skills: string;
   is_conducted: boolean;
   payment_id: string | null;
-  interview_questions: any[];
+  interview_questions: string[];
+  payment_status: string;
 }
 
 export interface ICreateInterviewRequest {

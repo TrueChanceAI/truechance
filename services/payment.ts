@@ -5,7 +5,20 @@ import type {
 } from "@/types/payment";
 
 export const initiatePayment: TInitiatePaymentService = async (payload) => {
-  const { data } = await apiClient.post("/payment/initiate", payload);
+  const { interviewId, address, userIP } = payload;
+
+  const { data } = await apiClient.post(
+    "/payment/initiate",
+    {
+      interviewId,
+      address,
+    },
+    {
+      headers: {
+        "x-forwarded-for": userIP,
+      },
+    }
+  );
 
   return data;
 };

@@ -40,6 +40,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
       }
 
       const userIP = await getUserIP();
+      console.log(userIP);
 
       initiatePayment({
         interviewId,
@@ -60,7 +61,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
           } catch {}
 
           // Redirect to payment gateway
-          // window.location.href = response.redirectUrl;
+          window.location.href = response.redirectUrl;
         } else {
           throw new Error("Invalid payment response");
         }

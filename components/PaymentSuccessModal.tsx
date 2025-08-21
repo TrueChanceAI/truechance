@@ -28,7 +28,9 @@ const PaymentSuccessModal: React.FC<PaymentSuccessModalProps> = ({
 
     // Small delay for better UX
     setTimeout(() => {
-      router.push(`/interview?interviewId=${interviewId}`);
+      router.push(
+        `/interview?interviewId=${interviewId}&paymentId=${paymentId}`
+      );
     }, 500);
   };
 
