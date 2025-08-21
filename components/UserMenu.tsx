@@ -6,6 +6,7 @@ import type { RootState } from "@/redux/store";
 import { resetMeState, setSessionToken } from "@/redux/slices/meSlice";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/hooks/useLanguage";
+import { removeToken } from "@/lib/token";
 
 export function UserMenu() {
   const [isOpen, setIsOpen] = useState(false);
@@ -55,6 +56,13 @@ export function UserMenu() {
     setIsOpen(false);
   };
 
+  const handleSignOut = () => {
+    dispatch(resetMeState());
+    dispatch(setSessionToken(null));
+    removeToken();
+    router.push("/");
+  };
+
   return (
     <div className="relative" ref={menuRef}>
       <button
@@ -63,14 +71,14 @@ export function UserMenu() {
         aria-label="User menu"
         aria-expanded={isOpen}
       >
-        {getInitials(user.name)}
+        {getInitials(user.firstName + " " + user.lastName)}
       </button>
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-48 bg-zinc-900 rounded-lg shadow-xl border border-zinc-700 py-2 z-50 min-w-[200px] sm:min-w-[200px] max-w-[calc(100vw-2rem)] transform -translate-x-0 sm:translate-x-0">
           <div className="px-4 py-2 border-b border-zinc-700">
             <p className="text-sm font-medium text-white truncate">
-              {user.name || "User"}
+              {user.firstName + " " + user.lastName}
             </p>
             <p className="text-xs text-zinc-400 truncate">{user.email}</p>
           </div>
@@ -96,14 +104,7 @@ export function UserMenu() {
           </button>
 
           <button
-            onClick={async () => {
-              try {
-                await fetch("/api/auth/logout", { method: "POST" });
-              } catch {}
-              dispatch(resetMeState());
-              dispatch(setSessionToken(null));
-              router.push("/");
-            }}
+            onClick={handleSignOut}
             className="w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors flex items-center gap-2"
           >
             <svg

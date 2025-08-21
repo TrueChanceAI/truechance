@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
       );
       // Redirect based on existing status
       const redirectUrl =
-        payment_order.status === "settled"
+        payment_order.status === "completed"
           ? "/upload-resume"
           : "/payment-failed";
       return NextResponse.redirect(new URL(redirectUrl, req.url));
@@ -88,7 +88,7 @@ export async function GET(req: NextRequest) {
               paymentStatus = "declined"; // Use valid database status instead of AMOUNT_MISMATCH
               redirectUrl = "/payment-failed";
             } else if (status === "settled") {
-              paymentStatus = "settled";
+              paymentStatus = "completed";
               redirectUrl = "/upload-resume";
             } else if (status === "declined") {
               paymentStatus = "declined";
@@ -117,7 +117,7 @@ export async function GET(req: NextRequest) {
         } else {
           // Fallback: try to extract status from message
           if (response.message && response.message.includes("settled")) {
-            paymentStatus = "settled";
+            paymentStatus = "completed";
             redirectUrl = "/upload-resume";
           } else {
             paymentStatus = "declined"; // Use valid database status

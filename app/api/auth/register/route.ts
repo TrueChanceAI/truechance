@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const phoneNumberRegex = /^(\+966|0)(5\d{8})$/;
+    const phoneNumberRegex = /^[1-9]\d{6,14}$/;
     if (phoneNumber && !phoneNumberRegex.test(phoneNumber)) {
       return NextResponse.json(
         { error: "Invalid phone number format" },

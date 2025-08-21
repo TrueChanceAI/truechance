@@ -21,7 +21,7 @@ export interface BillingAddress {
 
 export type PaymentStatus =
   | "pending"
-  | "settled"
+  | "completed"
   | "declined"
   | "3ds"
   | "redirect"

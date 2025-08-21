@@ -155,7 +155,10 @@ const LoginForm = () => {
             {error && (
               <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
                 <p className="text-red-400 text-sm text-center">
-                  {error?.message || "Login failed. Please try again."}
+                  {(error?.response as any)?.data?.error ||
+                    (error?.response as any)?.message ||
+                    error?.message ||
+                    "Something went wrong"}
                 </p>
               </div>
             )}

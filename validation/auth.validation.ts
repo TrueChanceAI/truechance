@@ -34,7 +34,7 @@ export const RegisterSchema = yup.object().shape({
   phoneNumber: yup
     .string()
     .required("Phone number is a required field.")
-    .matches(/^[\+]?[1-9][\d]{0,15}$/, "Please enter a valid phone number"),
+    .matches(/^[1-9]\d{6,14}$/, "Please enter a valid phone number"),
   password: PasswordSchema,
   confirmPassword: yup
     .string()

@@ -1,16 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  // images: {
-  //   remotePatterns: [
-  //     {
-  //       protocol: "https",
-  //       hostname: "ik.imagekit.io",
-  //       port: "",
-  //     },
-  //   ],
-  // },
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -18,15 +8,38 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
 
-  // Security headers
   async headers() {
     const isDevelopment = process.env.NODE_ENV === "development";
 
-    // More permissive CSP for development to avoid blocking video/audio functionality
-    // Development CSP allows more sources to prevent blocking of WebRTC, WebSockets, etc.
-    const cspValue = isDevelopment
-      ? "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:; script-src 'self' 'unsafe-eval' 'unsafe-inline' blob:; style-src 'self' 'unsafe-inline' blob:; img-src 'self' data: https: blob:; font-src 'self' data: blob:; connect-src 'self' https: wss: ws: blob: data:; media-src 'self' blob: data:; worker-src 'self' blob:; child-src 'self' blob:; frame-src 'self' blob:; frame-ancestors 'none';"
-      : "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' blob:; style-src 'self' 'unsafe-inline' blob:; img-src 'self' data: https: blob:; font-src 'self' data: blob:; connect-src 'self' https: wss: ws: blob: data:; media-src 'self' blob: data:; worker-src 'self' blob:; child-src 'self' blob:; frame-src 'self' blob:; frame-ancestors 'none';";
+    // Development CSP: permissive
+    const devCsp = `
+      default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:;
+      script-src 'self' 'unsafe-eval' 'unsafe-inline' blob:;
+      style-src 'self' 'unsafe-inline' blob:;
+      img-src 'self' data: https: blob:;
+      font-src 'self' data: blob:;
+      connect-src 'self' https: wss: ws: blob: data:;
+      media-src 'self' blob: data:;
+      worker-src 'self' blob:;
+      child-src 'self' blob:;
+      frame-src 'self' blob:;
+      frame-ancestors 'none';
+    `;
+
+    // Production CSP: includes GA + Fonts
+    const prodCsp = `
+      default-src 'self';
+      script-src 'self' 'unsafe-eval' 'unsafe-inline' blob: https://www.googletagmanager.com;
+      style-src 'self' 'unsafe-inline' blob: https://fonts.googleapis.com;
+      font-src 'self' https://fonts.gstatic.com;
+      connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com;
+      img-src 'self' data: https://www.googletagmanager.com https://www.google-analytics.com;
+      media-src 'self' blob: data:;
+      worker-src 'self' blob:;
+      child-src 'self' blob:;
+      frame-src 'self' blob:;
+      frame-ancestors 'none';
+    `;
 
     return [
       {
@@ -54,11 +67,11 @@ const nextConfig: NextConfig = {
           },
           {
             key: "Content-Security-Policy",
-            value: cspValue,
+            value: (isDevelopment ? devCsp : prodCsp).replace(/\n/g, " "),
           },
         ],
       },
-      // CORS headers for API routes (fallback)
+      // CORS headers for API routes
       {
         source: "/api/(.*)",
         headers: [

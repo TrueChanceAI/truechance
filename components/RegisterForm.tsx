@@ -226,7 +226,7 @@ export default function RegisterForm({
                     {...field}
                     id="phoneNumber"
                     type="tel"
-                    placeholder={t("auth.phoneNumberPlaceholder")}
+                    placeholder={"966 XXXXXXXX"}
                     className={cn(
                       "bg-white/10 border-white/20 text-white placeholder:text-white/50",
                       "focus:bg-white/20 focus:border-white/40",

@@ -2,7 +2,7 @@ import axios from "axios";
 
 import { getToken, removeToken } from "@/lib/token";
 import { store } from "@/redux/store";
-import { resetMeState } from "@/redux/slices/meSlice";
+import { resetMeState, setSessionToken } from "@/redux/slices/meSlice";
 
 const clientApi = axios.create({
   baseURL: `${process.env.NEXT_PUBLIC_APP_URL}/api`,
@@ -32,10 +32,10 @@ clientApi.interceptors.response.use(
     };
   }) => {
     if (error?.response?.status === 401) {
-      localStorage.clear();
       removeToken();
       // Clear user state in Redux
       store.dispatch(resetMeState());
+      store.dispatch(setSessionToken(null));
     }
 
     return Promise.reject(error);

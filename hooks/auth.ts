@@ -38,7 +38,7 @@ export const useSignIn = () => {
 
   const onError = (error: IAPIError) => {
     toast.error(
-      (error?.response as any)?.data?.message ||
+      (error?.response as any)?.data?.error ||
         (error?.response as any)?.message ||
         error?.message ||
         "Something went wrong"

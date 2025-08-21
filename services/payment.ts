@@ -148,7 +148,7 @@ export class PaymentService {
    */
   static mapEDFAStatus(edfaStatus: string): PaymentStatus {
     const statusMap: Record<string, PaymentStatus> = {
-      settled: "settled",
+      settled: "completed",
       declined: "declined",
       "3ds": "3ds",
       redirect: "redirect",
