@@ -134,8 +134,14 @@ export async function POST(req: NextRequest) {
       email: user.email,
     });
 
-    const { resumeFile, resumeFileName, resumeFileType, resumeText, language } =
-      await req.json();
+    const {
+      resumeFile,
+      resumeFileName,
+      resumeFileType,
+      resumeText,
+      language,
+      interviewQuestions,
+    } = await req.json();
 
     // Validate all inputs
     const emailValidation = validateEmail(user.email);
@@ -320,6 +326,34 @@ export async function POST(req: NextRequest) {
       conducted_interview: "not_conducted", // Add the flag column
     };
 
+    // Persist interview questions if provided (expects JSON array of strings)
+    if (interviewQuestions) {
+      let questionsArray: string[] | null = null;
+      try {
+        if (Array.isArray(interviewQuestions)) {
+          questionsArray = interviewQuestions.filter(
+            (q: unknown) => typeof q === "string"
+          ) as string[];
+        } else if (typeof interviewQuestions === "string") {
+          const parsed = JSON.parse(interviewQuestions);
+          if (Array.isArray(parsed)) {
+            questionsArray = parsed.filter(
+              (q: unknown) => typeof q === "string"
+            ) as string[];
+          }
+        }
+      } catch (e) {
+        console.warn("⚠️ Failed to parse interviewQuestions; skipping save.");
+      }
+
+      if (questionsArray && questionsArray.length > 0) {
+        supabaseData.interview_questions = questionsArray;
+        console.log("✅ interview_questions added:", questionsArray.length);
+      } else {
+        console.log("ℹ️ No valid interview_questions provided.");
+      }
+    }
+
     // Add skills as text
     if (extractedSkills) {
       supabaseData.skills = extractedSkills;
@@ -340,9 +374,13 @@ export async function POST(req: NextRequest) {
       JSON.stringify(supabaseData, null, 2)
     );
 
-    const { error } = await supabaseServer
+    const { data: insertedRow, error } = await supabaseServer
       .from("interviews")
-      .insert(supabaseData);
+      .insert(supabaseData)
+      .select("id")
+      .single();
+
+    console.log("insertedRow", insertedRow);
 
     if (error) {
       console.error("❌ Database insertion error details:", {
@@ -374,11 +412,13 @@ export async function POST(req: NextRequest) {
         { status: 500 }
       );
     } else {
-      console.log("✅ Initial data saved to Supabase successfully");
+      console.log("✅ Initial data saved to Supabase successfully", {
+        interview_id: insertedRow?.id,
+      });
       // Return the interview_id so the frontend can store it
       return NextResponse.json({
         success: true,
-        interview_id: supabaseData.id,
+        interview_id: insertedRow?.id,
       });
     }
   } catch (error) {

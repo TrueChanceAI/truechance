@@ -1,24 +1,19 @@
 "use client";
 import Agent from "@/components/Agent";
-import { useEffect, useState } from "react";
 import { getInterviewerConfig } from "@/constants";
-import Cookies from "js-cookie";
 import { useLanguage } from "@/hooks/useLanguage";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
 import { useGetInterviewById } from "@/hooks/interview";
+import { useRouter } from "next/navigation";
 
 // Custom ProtectedRoute that checks both authentication and interview token
 function InterviewProtectedRoute({ children }: { children: React.ReactNode }) {
   const searchParams = useSearchParams();
   const interviewId = searchParams.get("interviewId");
-
-  const user = useSelector((s: RootState) => s.me.user);
   const router = useRouter();
-  const [hasValidToken, setHasValidToken] = useState(false);
-  const [isCheckingToken, setIsCheckingToken] = useState(true);
+  const user = useSelector((s: RootState) => s.me.user);
 
   const {
     interview,
@@ -26,7 +21,11 @@ function InterviewProtectedRoute({ children }: { children: React.ReactNode }) {
     isError: isErrorInterview,
   } = useGetInterviewById(interviewId as string);
 
-  if (isLoadingInterview || isCheckingToken) {
+  if (!interviewId) {
+    router.push("/upload-resume");
+  }
+
+  if (isLoadingInterview) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
         <div className="bg-zinc-900 rounded-2xl p-6 sm:p-8 flex flex-col items-center gap-4 min-w-[280px] sm:min-w-[320px] relative shadow-xl mx-4">
@@ -47,9 +46,7 @@ function InterviewProtectedRoute({ children }: { children: React.ReactNode }) {
             />
           </svg>
           <span className="text-base sm:text-lg font-medium text-white text-center">
-            {isLoadingInterview
-              ? "Checking authentication..."
-              : "Validating interview access..."}
+            Loading interview...
           </span>
         </div>
       </div>

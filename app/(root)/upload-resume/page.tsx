@@ -1,9 +1,7 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import React, { useRef } from "react";
 import { useEffect } from "react";
-import Cookies from "js-cookie";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
@@ -22,7 +20,6 @@ function UploadResumeContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showProgress, setShowProgress] = useState(false);
   const [progressStep, setProgressStep] = useState(0);
@@ -38,6 +35,7 @@ function UploadResumeContent() {
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [currentPaymentId, setCurrentPaymentId] = useState("");
+  const [currentInterviewId, setCurrentInterviewId] = useState("");
   const [questions, setQuestions] = useState<string[]>([]);
 
   const progressSteps = t("upload.progressSteps");
@@ -137,6 +135,7 @@ function UploadResumeContent() {
 
     let extractedText = ""; // Declare at function level
     let extractedName = ""; // Also declare candidate name at function level
+    let generatedQuestions: string[] = [];
 
     try {
       const res = await fetch("/api/extract-resume", {
@@ -194,11 +193,8 @@ function UploadResumeContent() {
       const data = await questionRes.json();
       console.log("Questions received:", data.questions);
       if (data.questions) {
-        setQuestions(data.questions); // Store questions in state
-        sessionStorage.setItem(
-          "interviewQuestions",
-          JSON.stringify(data.questions)
-        );
+        generatedQuestions = data.questions;
+        setQuestions(generatedQuestions); // Store questions in state (async)
       }
     } catch (err: any) {
       setError(err.message || "An error occurred while generating questions.");
@@ -257,7 +253,7 @@ function UploadResumeContent() {
           resumeFileName: file.name,
           resumeFileType: file.type,
           authenticatedUserEmail: user?.email,
-          interviewQuestions: questions,
+          interviewQuestions: generatedQuestions,
         }),
       });
 
@@ -271,10 +267,13 @@ function UploadResumeContent() {
 
         console.log("saveData", saveData);
 
-        // Store the interview_id for later use in save-interview
-        if (saveData.id) {
-          sessionStorage.setItem("initialInterviewId", saveData.id);
-          console.log("🔑 Stored initial interview_id:", saveData.id);
+        // Capture interview_id from API response
+        const returnedInterviewId = saveData.interview_id || saveData.id || "";
+        if (returnedInterviewId) {
+          console.log("🔑 initial interview_id:", returnedInterviewId);
+          setCurrentInterviewId(returnedInterviewId);
+        } else {
+          console.warn("⚠️ No interview_id returned from save-files API");
         }
 
         // Add a small delay to ensure the database transaction is committed
@@ -288,8 +287,15 @@ function UploadResumeContent() {
     }
 
     setShowProgress(false);
-    // Show payment form directly instead of the start interview modal
-    setShowPaymentForm(true);
+    // Show payment form only when we have an interview id
+    if (currentInterviewId) {
+      setShowPaymentForm(true);
+    } else {
+      // Fallback: still show payment form after a short delay to allow state to update
+      setTimeout(() => {
+        setShowPaymentForm(true);
+      }, 50);
+    }
   };
 
   // Handle payment success
@@ -505,6 +511,7 @@ function UploadResumeContent() {
                 onPaymentError={handlePaymentError}
                 onClose={handleClosePaymentForm}
                 isLoading={loading}
+                interviewId={currentInterviewId}
               />
             </div>
           </div>

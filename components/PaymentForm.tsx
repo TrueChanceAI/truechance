@@ -35,6 +35,7 @@ interface PaymentFormProps {
   onPaymentError: (error: string) => void;
   onClose: () => void;
   isLoading?: boolean;
+  interviewId: string;
 }
 
 interface AddressFormData extends BillingAddress {}
@@ -60,6 +61,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
   onPaymentError,
   onClose,
   isLoading = false,
+  interviewId,
 }) => {
   const { t } = useLanguage();
   const user = useSelector((state: RootState) => state.me.user);
@@ -74,10 +76,8 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
 
     setIsProcessing(true);
     try {
-      // Get the interview ID from session storage
-      const interviewId = sessionStorage.getItem("currentInterviewId");
       if (!interviewId) {
-        throw new Error("Interview session not found");
+        throw new Error("Interview not initialized");
       }
 
       // Get user's IP address
@@ -94,10 +94,14 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
         // Store payment ID for later use
         const paymentId =
           response.redirectUrl.split("paymentId=")[1] || "unknown";
-        sessionStorage.setItem("currentPaymentId", paymentId);
 
         // Clear any previous errors
         setPaymentError("");
+
+        // Notify parent in case it needs to track the payment id
+        try {
+          onPaymentSuccess(paymentId);
+        } catch {}
 
         // Redirect to payment gateway
         window.location.href = response.redirectUrl;
