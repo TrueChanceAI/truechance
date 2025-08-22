@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     const { first_name, last_name, email, phone_number } = user;
     const ip = req.headers.get("x-forwarded-for");
     const description = `Interview payment for ${interviewId}`;
-    const amount = 49;
+    const amount = 1;
 
     if (!ip) {
       return NextResponse.json(
