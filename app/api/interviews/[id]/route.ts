@@ -3,12 +3,12 @@ import { supabaseServer } from "@/lib/supabase-server";
 import { requireAuth, createUnauthorizedResponse } from "@/lib/auth-middleware";
 
 interface RouteParams {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function GET(req: NextRequest, { params }: RouteParams) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const authResult = await requireAuth(req);
     if (!authResult.user) {

@@ -15,6 +15,7 @@ import { CreateAssistantDTO } from "@vapi-ai/web/dist/api";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
+import { getToken } from "@/lib/token";
 
 enum CallStatus {
   INACTIVE = "INACTIVE",
@@ -79,7 +80,10 @@ const Agent = ({
   );
   const [loadingReturnDashboard, setLoadingReturnDashboard] = useState(false);
   const [loadingCall, setLoadingCall] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<string>("");
   const timeLimitRef = useRef<NodeJS.Timeout | null>(null);
+  const retryCountRef = useRef<number>(0);
+  const maxRetries = 3;
 
   useEffect(() => {
     const onCallStart = () => {
@@ -140,13 +144,53 @@ const Agent = ({
     };
 
     const onError = (error: any) => {
-      // Ignore expected "meeting has ended" error
+      console.error("VAPI Error:", error);
+
+      // Handle specific error types
       if (error?.type === "ejected" && error?.msg === "Meeting has ended") {
-        return; // don't log this one
+        console.log("Meeting ended normally, ignoring error");
+        return;
       }
 
-      console.error("VAPI Error:", error);
-      // Don't automatically end the call on error, let the user decide
+      // Handle Daily.co connection errors with retry logic
+      if (
+        error?.type === "daily-call-join-error" ||
+        error?.type === "start-method-error" ||
+        error?.errorMsg === "Meeting has ended"
+      ) {
+        if (retryCountRef.current < maxRetries) {
+          retryCountRef.current += 1;
+          const retryMessage = `Connection failed (attempt ${retryCountRef.current}/${maxRetries}). Retrying...`;
+          console.log(retryMessage);
+          setConnectionStatus(retryMessage);
+
+          // Set a delay before attempting to reconnect
+          setTimeout(() => {
+            if (callStatus === CallStatus.CONNECTING) {
+              console.log("Attempting to restart call...");
+              setConnectionStatus("Reconnecting...");
+              handleCall();
+            }
+          }, 2000 * retryCountRef.current); // Exponential backoff
+
+          return;
+        } else {
+          console.error("Max retries reached, stopping connection attempts");
+          setCallStatus(CallStatus.INACTIVE);
+          setLoadingCall(false);
+          setConnectionStatus("Connection failed after multiple attempts");
+          alert(
+            "Failed to establish interview connection after multiple attempts. Please check your internet connection and try again."
+          );
+          retryCountRef.current = 0; // Reset for next attempt
+          return;
+        }
+      }
+
+      // For other errors, don't automatically end the call
+      // Let the user decide what to do
+      console.error("Unhandled VAPI error:", error);
+      setConnectionStatus("Connection error occurred");
     };
 
     vapi.on("call-start", onCallStart);
@@ -388,8 +432,37 @@ const Agent = ({
     console.log("Starting call with config:", { type, questions, config });
     setInterviewStartTime(Date.now());
     setCallStatus(CallStatus.CONNECTING);
+    setLoadingCall(true);
+    setConnectionStatus("Initializing interview...");
 
     try {
+      // Validate VAPI configuration
+      if (!process.env.NEXT_PUBLIC_VAPI_WEB_TOKEN) {
+        throw new Error("VAPI web token is not configured");
+      }
+
+      if (type === "generate" && !process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID) {
+        throw new Error("VAPI workflow ID is not configured for generate mode");
+      }
+
+      setConnectionStatus("Checking microphone permissions...");
+
+      // Check if user has granted microphone permissions
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
+        stream.getTracks().forEach((track) => track.stop()); // Stop the test stream
+        console.log("Microphone permission granted");
+      } catch (mediaError) {
+        console.error("Microphone permission denied:", mediaError);
+        throw new Error(
+          "Microphone access is required for the interview. Please grant microphone permissions and try again."
+        );
+      }
+
+      setConnectionStatus("Connecting to interview server...");
+
       if (type === "generate") {
         console.log("Starting generate call");
         await vapi.start(
@@ -422,10 +495,22 @@ const Agent = ({
           },
         });
       }
+
       console.log("Call started successfully");
+      setLoadingCall(false);
+      setConnectionStatus("");
     } catch (error) {
       console.error("Error starting call:", error);
       setCallStatus(CallStatus.INACTIVE);
+      setLoadingCall(false);
+      setConnectionStatus("");
+
+      // Show user-friendly error message
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to start interview call";
+      alert(`Interview Error: ${errorMessage}`);
     }
   };
 
