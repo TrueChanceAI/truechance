@@ -5,6 +5,9 @@ import {
   generateQuestions,
   getInterviewById,
   getInterviews,
+  analyzeTone,
+  generateInterviewFeedback,
+  updateInterview,
 } from "@/services/interview";
 import { toast } from "sonner";
 import { IAPIError } from "@/types/api";
@@ -12,6 +15,9 @@ import {
   ICreateInterviewResponse,
   IExtractResumeResponse,
   IGenerateQuestionsResponse,
+  IAnalyzeToneResponse,
+  IInterviewFeedbackResponse,
+  IUpdateInterviewResponse,
 } from "@/types/interview";
 import { queryRetry } from "@/lib/api/client";
 
@@ -121,6 +127,90 @@ export const useGenerateQuestions = () => {
 
   return {
     generateQuestions: mutateAsync,
+    error,
+    isError,
+    isLoading: isPending,
+    isSuccess,
+  };
+};
+
+export const useAnalyzeTone = () => {
+  const onError = (error: IAPIError) => {
+    toast.error(
+      (error?.response as any)?.data?.error ||
+        (error?.response as any)?.message ||
+        error?.message ||
+        "Something went wrong"
+    );
+  };
+
+  const { mutateAsync, isPending, isSuccess, isError, error } = useMutation<
+    IAnalyzeToneResponse,
+    IAPIError,
+    { text: string }
+  >({
+    mutationFn: analyzeTone,
+    onError,
+  });
+
+  return {
+    analyzeTone: mutateAsync,
+    error,
+    isError,
+    isLoading: isPending,
+    isSuccess,
+  };
+};
+
+export const useGenerateInterviewFeedback = () => {
+  const onError = (error: IAPIError) => {
+    toast.error(
+      (error?.response as any)?.data?.error ||
+        (error?.response as any)?.message ||
+        error?.message ||
+        "Something went wrong"
+    );
+  };
+
+  const { mutateAsync, isPending, isSuccess, isError, error } = useMutation<
+    IInterviewFeedbackResponse,
+    IAPIError,
+    { transcript: string }
+  >({
+    mutationFn: generateInterviewFeedback,
+    onError,
+  });
+
+  return {
+    generateInterviewFeedback: mutateAsync,
+    error,
+    isError,
+    isLoading: isPending,
+    isSuccess,
+  };
+};
+
+export const useUpdateInterview = () => {
+  const onError = (error: IAPIError) => {
+    toast.error(
+      (error?.response as any)?.data?.error ||
+        (error?.response as any)?.message ||
+        error?.message ||
+        "Something went wrong"
+    );
+  };
+
+  const { mutateAsync, isPending, isSuccess, isError, error } = useMutation<
+    IUpdateInterviewResponse,
+    IAPIError,
+    { id: string; payload: any }
+  >({
+    mutationFn: ({ id, payload }) => updateInterview(id, payload),
+    onError,
+  });
+
+  return {
+    updateInterview: mutateAsync,
     error,
     isError,
     isLoading: isPending,

@@ -15,7 +15,11 @@ import { CreateAssistantDTO } from "@vapi-ai/web/dist/api";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
-import { getToken } from "@/lib/token";
+import {
+  useAnalyzeTone,
+  useGenerateInterviewFeedback,
+  useUpdateInterview,
+} from "@/hooks/interview";
 
 enum CallStatus {
   INACTIVE = "INACTIVE",
@@ -84,6 +88,11 @@ const Agent = ({
   const timeLimitRef = useRef<NodeJS.Timeout | null>(null);
   const retryCountRef = useRef<number>(0);
   const maxRetries = 3;
+
+  // API hooks
+  const { analyzeTone } = useAnalyzeTone();
+  const { generateInterviewFeedback } = useGenerateInterviewFeedback();
+  const { updateInterview } = useUpdateInterview();
 
   useEffect(() => {
     const onCallStart = () => {
@@ -293,7 +302,7 @@ const Agent = ({
       .filter((msg) => msg.role === "user")
       .map((msg) => msg.content)
       .join("\n");
-    const toneResult = await analyzeTone(allText);
+    const toneResult = await handleAnalyzeTone(allText);
     setTone(toneResult);
     setAnalyzing(false);
     return toneResult; // Return the tone result directly
@@ -314,25 +323,12 @@ const Agent = ({
     return pauses;
   }
 
-  // Tone analysis using Gemini/OpenAI
-  async function analyzeTone(text: string): Promise<any> {
+  // Tone analysis using service hook
+  async function handleAnalyzeTone(text: string): Promise<any> {
     try {
-      const token = sessionToken as string;
-      const res = await fetch("/api/analyze-tone", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ text }),
-      });
-      if (!res.ok) return "Could not analyze tone.";
-      const data = await res.json();
-      if (typeof data.tone === "object") return data.tone;
-      if (typeof data.tone === "string") {
-        // Try to extract JSON from code block or 'json' prefix
-        let str = data.tone.trim();
-        // Remove code block markers and 'json' prefix
+      const { tone } = await analyzeTone({ text });
+      if (typeof tone === "string") {
+        let str = tone.trim();
         if (str.startsWith("```")) {
           str = str
             .replace(/^```json|^```/i, "")
@@ -342,7 +338,6 @@ const Agent = ({
         if (str.toLowerCase().startsWith("json")) {
           str = str.replace(/^json/i, "").trim();
         }
-        // Try to parse as JSON, otherwise return as string
         try {
           const parsed = JSON.parse(str);
           if (typeof parsed === "object" && parsed !== null) return parsed;
@@ -351,7 +346,7 @@ const Agent = ({
           return str;
         }
       }
-      return "No tone detected.";
+      return tone ?? "No tone detected.";
     } catch {
       return "Could not analyze tone.";
     }
@@ -365,38 +360,24 @@ const Agent = ({
       .join("\n")
       .slice(0, MAX_CHARS);
 
-    const token = await getToken();
-    const res = await fetch("/api/interview-feedback", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ transcript: transcriptText }),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      try {
-        const feedbackData =
-          typeof data.feedback === "string"
-            ? JSON.parse(data.feedback)
-            : data.feedback;
-        setFeedback(feedbackData);
-
-        // Save with the tone result directly
-        await saveToSupabase(messages, feedbackData, toneResult);
-      } catch {
-        const feedbackData = { raw: data.feedback };
-        setFeedback(feedbackData);
-
-        // Save with the tone result directly
-        await saveToSupabase(messages, feedbackData, toneResult);
+    try {
+      const data: any = await generateInterviewFeedback({
+        transcript: transcriptText,
+      });
+      const raw = data?.feedback;
+      let feedbackData: any = raw;
+      if (typeof raw === "string") {
+        try {
+          feedbackData = JSON.parse(raw);
+        } catch {
+          feedbackData = { raw };
+        }
       }
-    } else {
+      setFeedback(feedbackData);
+      await saveToSupabase(messages, feedbackData, toneResult);
+    } catch {
       const feedbackData = { raw: "Could not generate feedback." };
       setFeedback(feedbackData);
-
-      // Save with the tone result directly
       await saveToSupabase(messages, feedbackData, toneResult);
     }
     setLoadingFeedback(false);
@@ -557,10 +538,10 @@ const Agent = ({
         if (typeof toneResult === "object" && !Array.isArray(toneResult)) {
           // Store the complete tone object with all fields
           toneDataForStorage = {
-            confidence: toneResult.confidence || null,
-            tone: toneResult.tone || null,
-            energy: toneResult.energy || null,
-            summary: toneResult.summary || null,
+            confidence: (toneResult as any).confidence || null,
+            tone: (toneResult as any).tone || null,
+            energy: (toneResult as any).energy || null,
+            summary: (toneResult as any).summary || null,
           };
         } else if (typeof toneResult === "string") {
           // If tone is a string, store it as is
@@ -632,25 +613,16 @@ const Agent = ({
         });
       }
 
-      // Get authentication token for API calls
-      const token = await getToken();
-
-      // Send to API to save to Supabase
-      const response = await fetch("/api/save-interview", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      await updateInterview({
+        id: interviewData.interviewId as string,
+        payload: {
+          transcript: interviewData.transcript,
+          feedback: interviewData.feedback,
+          duration: interviewData.duration,
+          tone: interviewData.tone as any,
         },
-        body: JSON.stringify(interviewData),
       });
-
-      if (response.ok) {
-        console.log("✅ Interview data saved to Supabase successfully");
-      } else {
-        const errorData = await response.json();
-        console.error("❌ Failed to save to Supabase:", errorData);
-      }
+      console.log("✅ Interview data saved to Supabase successfully");
     } catch (error) {
       console.error("Error saving to Supabase:", error);
     }

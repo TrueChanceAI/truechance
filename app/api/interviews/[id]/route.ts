@@ -151,3 +151,74 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     );
   }
 }
+
+export async function PUT(req: NextRequest, { params }: RouteParams) {
+  try {
+    const { id } = await params;
+    const body = await req.json();
+    const { transcript, feedback, duration, tone } = body;
+
+    const authResult = await requireAuth(req);
+    if (!authResult.user) {
+      return createUnauthorizedResponse(
+        authResult.error || "Authentication required"
+      );
+    }
+
+    // check if interview exists
+    const { data: interview, error: interview_error } = await supabaseServer
+      .from("interviews")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (interview_error) {
+      return NextResponse.json(
+        { error: "Interview not found" },
+        { status: 404 }
+      );
+    }
+
+    if (!interview) {
+      return NextResponse.json(
+        { error: "Interview not found" },
+        { status: 404 }
+      );
+    }
+
+    if (interview.user_id !== authResult.user.id) {
+      return NextResponse.json(
+        { error: "You are not authorized to update this interview" },
+        { status: 403 }
+      );
+    }
+
+    const { error } = await supabaseServer
+      .from("interviews")
+      .update({
+        transcript,
+        feedback,
+        duration,
+        tone,
+      })
+      .eq("id", id);
+
+    if (error) {
+      return NextResponse.json(
+        { error: "Failed to update interview" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("❌ Error saving interview data:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
+}

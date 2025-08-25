@@ -63,6 +63,46 @@ export interface IGenerateQuestionsResponse extends IAPIResponse {
   questions: string[];
 }
 
+// Tone analysis
+export interface IAnalyzeToneRequest {
+  text: string;
+}
+
+export type IToneAnalysis =
+  | {
+      confidence?: number | null;
+      tone?: string | null;
+      energy?: string | number | null;
+      summary?: string | null;
+      [key: string]: unknown;
+    }
+  | string;
+
+export interface IAnalyzeToneResponse extends IAPIResponse {
+  tone: IToneAnalysis;
+}
+
+// Interview feedback generation
+export interface IInterviewFeedbackRequest {
+  transcript: string;
+}
+
+export interface IInterviewFeedbackResponse extends IAPIResponse {
+  feedback: unknown; // API can return stringified JSON or object
+}
+
+// Save conducted interview
+export interface IUpdateInterviewRequest {
+  transcript: string;
+  feedback: unknown;
+  duration: string | null;
+  tone: IToneAnalysis | null;
+}
+
+export interface IUpdateInterviewResponse extends IAPIResponse {
+  interview: Interview;
+}
+
 export type TExtractResumeService = (
   payload: IExtractResumeRequest
 ) => Promise<IExtractResumeResponse>;
@@ -79,3 +119,16 @@ export type TGetInterviewByIdService = (
 export type TGenerateQuestionsService = (
   payload: IGenerateQuestionsRequest
 ) => Promise<IGenerateQuestionsResponse>;
+
+export type TAnalyzeToneService = (
+  payload: IAnalyzeToneRequest
+) => Promise<IAnalyzeToneResponse>;
+
+export type TInterviewFeedbackService = (
+  payload: IInterviewFeedbackRequest
+) => Promise<IInterviewFeedbackResponse>;
+
+export type TUpdateInterviewService = (
+  id: string,
+  payload: IUpdateInterviewRequest
+) => Promise<IUpdateInterviewResponse>;

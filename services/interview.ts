@@ -5,6 +5,9 @@ import {
   TCreateInterviewService,
   TExtractResumeService,
   TGenerateQuestionsService,
+  TAnalyzeToneService,
+  TInterviewFeedbackService,
+  TUpdateInterviewService,
 } from "@/types/interview";
 
 export const getInterviews: TGetAllInterviewsService = async () => {
@@ -42,5 +45,22 @@ export const extractResume: TExtractResumeService = async ({ file, email }) => {
 export const generateQuestions: TGenerateQuestionsService = async (payload) => {
   const { data } = await clientApi.post("/generate-questions", payload);
 
+  return data;
+};
+
+export const analyzeTone: TAnalyzeToneService = async (payload) => {
+  const { data } = await clientApi.post("/analyze-tone", payload);
+  return data;
+};
+
+export const generateInterviewFeedback: TInterviewFeedbackService = async (
+  payload
+) => {
+  const { data } = await clientApi.post("/interview-feedback", payload);
+  return data;
+};
+
+export const updateInterview: TUpdateInterviewService = async (id, payload) => {
+  const { data } = await clientApi.put(`/interviews/${id}`, payload);
   return data;
 };
