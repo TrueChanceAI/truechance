@@ -12,11 +12,13 @@ export async function POST(req: NextRequest) {
     // Authentication check
     const authResult = await requireAuth(req);
     if (!authResult.user) {
-      return createUnauthorizedResponse(authResult.error || "Authentication required");
+      return createUnauthorizedResponse(
+        authResult.error || "Authentication required"
+      );
     }
-    
+
     // Rate limiting
-    const clientIP = req.ip || req.headers.get('x-forwarded-for') || 'unknown';
+    const clientIP = req.headers.get("x-forwarded-for") || "unknown";
     if (!rateLimiter(clientIP)) {
       return NextResponse.json(
         { error: "Too many requests. Please try again later." },
@@ -26,26 +28,38 @@ export async function POST(req: NextRequest) {
 
     // Validate request body
     if (!req.body) {
-      return NextResponse.json({ error: "Request body is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Request body is required" },
+        { status: 400 }
+      );
     }
 
     const { transcript } = await req.json();
     if (!transcript) {
-      return NextResponse.json({ error: "No transcript provided." }, { status: 400 });
+      return NextResponse.json(
+        { error: "No transcript provided." },
+        { status: 400 }
+      );
     }
 
     // Validate transcript length to prevent abuse
-    if (typeof transcript !== 'string' || transcript.length > 50000) {
-      return NextResponse.json({ 
-        error: "Transcript too long. Maximum 50,000 characters allowed." 
-      }, { status: 400 });
+    if (typeof transcript !== "string" || transcript.length > 50000) {
+      return NextResponse.json(
+        {
+          error: "Transcript too long. Maximum 50,000 characters allowed.",
+        },
+        { status: 400 }
+      );
     }
 
     // Validate transcript content (basic check)
     if (transcript.trim().length < 100) {
-      return NextResponse.json({ 
-        error: "Transcript too short. Minimum 100 characters required." 
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: "Transcript too short. Minimum 100 characters required.",
+        },
+        { status: 400 }
+      );
     }
 
     const { text } = await generateText({
@@ -107,27 +121,64 @@ Return feedback in this exact JSON format:
 
 Transcript:
 ${transcript}
-`.trim()
+`.trim(),
     });
 
     // ✅ Clean output to remove backticks and extra junk
     let cleanedText = text.trim();
 
     if (cleanedText.startsWith("```")) {
-      cleanedText = cleanedText.replace(/^```(json)?/i, "").replace(/```$/, "").trim();
+      cleanedText = cleanedText
+        .replace(/^```(json)?/i, "")
+        .replace(/```$/, "")
+        .trim();
     }
 
     let feedback;
     try {
+      // First attempt: direct JSON parse
       feedback = JSON.parse(cleanedText);
-    } catch (err) {
-      console.error("❌ Failed to parse AI output:", text);
-      return NextResponse.json({ error: "Invalid JSON from AI", raw: text }, { status: 500 });
+    } catch (_err) {
+      // Fallback: try to extract the first JSON object from the string
+      const extractJsonObject = (s: string): any | null => {
+        const start = s.indexOf("{");
+        const end = s.lastIndexOf("}");
+        if (start === -1 || end === -1 || end <= start) return null;
+        const candidate = s.slice(start, end + 1);
+        try {
+          return JSON.parse(candidate);
+        } catch {
+          // Try progressively shrinking from the end to find a valid JSON
+          for (let i = end; i > start; i--) {
+            const slice = s.slice(start, i);
+            try {
+              return JSON.parse(slice);
+            } catch {
+              continue;
+            }
+          }
+          return null;
+        }
+      };
+
+      const extracted = extractJsonObject(cleanedText);
+      if (extracted) {
+        feedback = extracted;
+      } else {
+        console.error("❌ Failed to parse AI output:", text);
+        return NextResponse.json(
+          { error: "Invalid JSON from AI", raw: text },
+          { status: 500 }
+        );
+      }
     }
 
     return NextResponse.json({ feedback });
   } catch (error: any) {
     console.error("❌ Error generating feedback:", error);
-    return NextResponse.json({ error: "Could not generate feedback." }, { status: 500 });
+    return NextResponse.json(
+      { error: "Could not generate feedback." },
+      { status: 500 }
+    );
   }
 }

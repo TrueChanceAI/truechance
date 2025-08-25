@@ -193,55 +193,55 @@ function InterviewProtectedRoute({ children }: { children: React.ReactNode }) {
   }
 
   // Check if interview has started but not completed
-  if (
-    interview.transcript &&
-    interview.transcript !== "Interview not started" &&
-    !isConducted
-  ) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-        <div className="bg-zinc-900 rounded-2xl p-6 sm:p-8 flex flex-col items-center gap-4 min-w-[280px] sm:min-w-[320px] relative shadow-xl mx-4">
-          <div className="w-16 h-16 bg-orange-900/20 rounded-full flex items-center justify-center">
-            <svg
-              className="w-8 h-8 text-orange-500"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-          </div>
-          <h2 className="text-xl font-bold text-white text-center">
-            Interview In Progress
-          </h2>
-          <p className="text-sm text-gray-300 text-center">
-            This interview has been started but not completed. You can continue
-            from where you left off.
-          </p>
-          <div className="flex gap-2">
-            <button
-              onClick={() => router.push(`/interview/${interview.id}`)}
-              className="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors"
-            >
-              Continue Interview
-            </button>
-            <button
-              onClick={() => router.push("/upload-resume")}
-              className="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors"
-            >
-              New Interview
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // if (
+  //   interview.transcript &&
+  //   interview.transcript !== "Interview not started" &&
+  //   !isConducted
+  // ) {
+  //   return (
+  //     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+  //       <div className="bg-zinc-900 rounded-2xl p-6 sm:p-8 flex flex-col items-center gap-4 min-w-[280px] sm:min-w-[320px] relative shadow-xl mx-4">
+  //         <div className="w-16 h-16 bg-orange-900/20 rounded-full flex items-center justify-center">
+  //           <svg
+  //             className="w-8 h-8 text-orange-500"
+  //             fill="none"
+  //             stroke="currentColor"
+  //             viewBox="0 0 24 24"
+  //             xmlns="http://www.w3.org/2000/svg"
+  //           >
+  //             <path
+  //               strokeLinecap="round"
+  //               strokeLinejoin="round"
+  //               strokeWidth={2}
+  //               d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+  //             />
+  //           </svg>
+  //         </div>
+  //         <h2 className="text-xl font-bold text-white text-center">
+  //           Interview In Progress
+  //         </h2>
+  //         <p className="text-sm text-gray-300 text-center">
+  //           This interview has been started but not completed. You can continue
+  //           from where you left off.
+  //         </p>
+  //         <div className="flex gap-2">
+  //           <button
+  //             onClick={() => router.push(`/interview/${interview.id}`)}
+  //             className="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors"
+  //           >
+  //             Continue Interview
+  //           </button>
+  //           <button
+  //             onClick={() => router.push("/upload-resume")}
+  //             className="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors"
+  //           >
+  //             New Interview
+  //           </button>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   // Check if user is authorized to access this interview
   if (interview.user_id && user.id && interview.user_id !== user.id) {
@@ -400,6 +400,7 @@ function InterviewPageContent() {
       </div>
 
       <Agent
+        interviewId={interviewId as string}
         questions={interview.interview_questions}
         type="interview"
         userName={interview.candidate_name || ""}

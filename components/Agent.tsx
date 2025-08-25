@@ -513,25 +513,6 @@ const Agent = ({
         .map((msg) => `${msg.role}: ${msg.content}`)
         .join("\n");
 
-      // Get email and resume file content from sessionStorage
-      const email = sessionStorage.getItem("resumeEmail") || "";
-      const resumeFileContent =
-        sessionStorage.getItem("resumeFileContent") || "";
-      const resumeFileName =
-        sessionStorage.getItem("resumeFileName") || "resume.pdf";
-      const resumeFileType =
-        sessionStorage.getItem("resumeFileType") || "application/pdf";
-      const resumeText = sessionStorage.getItem("resumeText") || ""; // Get resume text for skills extraction
-
-      // Debug: Log what we're getting from sessionStorage
-      console.log("🔍 SessionStorage data:", {
-        resumeEmail: email,
-        hasResumeFile: !!resumeFileContent,
-        resumeFileName,
-        resumeFileType,
-        hasResumeText: !!resumeText,
-      });
-
       // Prepare tone data for storage - store the complete tone object
       let toneDataForStorage = null;
       if (toneResult) {
@@ -552,66 +533,16 @@ const Agent = ({
         }
       }
 
-      // Get the extracted candidate name from sessionStorage for consistency
-      const extractedCandidateName =
-        sessionStorage.getItem("extractedCandidateName") || userName;
-
-      // Get the initial interview_id from sessionStorage
-      const initialInterviewId = sessionStorage.getItem("initialInterviewId");
-
-      // Debug: Log what we got from sessionStorage
-      console.log("🔍 SessionStorage interview ID data:", {
-        initialInterviewId: initialInterviewId,
-        initialInterviewIdType: typeof initialInterviewId,
-        hasInitialInterviewId: !!initialInterviewId,
-        allSessionKeys: Object.keys(sessionStorage),
-      });
-
       // Prepare data for Supabase
       const interviewData = {
         transcript: transcriptText,
-        feedback: feedback,
-        candidateName: extractedCandidateName, // Use extracted name for consistency
+        feedback: feedback, // Use extracted name for consistency
         duration: interviewDuration || "N/A",
         tone: toneDataForStorage, // Store the complete tone object
         language: language || "en",
         userId: userId || "anonymous",
-        interviewId:
-          initialInterviewId || interviewId || `interview_${Date.now()}`, // Use initial ID if available
-        email: email,
-        resumeFile: resumeFileContent, // Store the original file content for upload
-        resumeFileName: resumeFileName, // Pass original filename
-        resumeFileType: resumeFileType, // Pass content type
-        resumeText: resumeText, // Pass resume text for skills extraction
+        interviewId,
       };
-
-      console.log("📊 Saving interview data:", {
-        candidateName: userName,
-        duration: interviewDuration,
-        tone: toneDataForStorage,
-        email: email,
-        hasResume: !!resumeFileContent,
-        fileName: resumeFileName,
-      });
-
-      // Debug: Log the final interview data being sent
-      console.log("📤 Sending interview data to API:", {
-        email: interviewData.email,
-        candidateName: interviewData.candidateName,
-        hasTranscript: !!interviewData.transcript,
-        hasFeedback: !!interviewData.feedback,
-        hasResumeFile: !!interviewData.resumeFile,
-        interviewId: interviewData.interviewId,
-        interviewIdType: typeof interviewData.interviewId,
-      });
-
-      // Debug: Check if email is empty and why
-      if (!interviewData.email) {
-        console.error("❌ EMAIL IS EMPTY! SessionStorage contents:", {
-          resumeEmail: sessionStorage.getItem("resumeEmail"),
-          allKeys: Object.keys(sessionStorage),
-        });
-      }
 
       await updateInterview({
         id: interviewData.interviewId as string,
