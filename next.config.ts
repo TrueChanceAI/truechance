@@ -23,30 +23,30 @@ const nextConfig: NextConfig = {
     // Development CSP: permissive
     const devCsp = `
       default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:;
-      script-src 'self' 'unsafe-eval' 'unsafe-inline' blob:;
-      style-src 'self' 'unsafe-inline' blob:;
-      img-src 'self' data: https: blob:;
-      font-src 'self' data: blob:;
-      connect-src 'self' https: wss: ws: blob: data:;
-      media-src 'self' blob: data:;
-      worker-src 'self' blob:;
-      child-src 'self' blob:;
-      frame-src 'self' blob:;
+      script-src 'self' 'unsafe-eval' 'unsafe-inline' blob: https://cdn.jsdelivr.net;
+      style-src 'self' 'unsafe-inline' blob: https://cdn.jsdelivr.net;
+      img-src 'self' data: https: blob: https://cdn.jsdelivr.net;
+      font-src 'self' data: blob: https://cdn.jsdelivr.net;
+      connect-src 'self' https: wss: ws: blob: data: https://cdn.jsdelivr.net;
+      media-src 'self' blob: data: https://cdn.jsdelivr.net;
+      worker-src 'self' blob: https://cdn.jsdelivr.net;
+      child-src 'self' blob: https://cdn.jsdelivr.net;
+      frame-src 'self' blob: https://cdn.jsdelivr.net;
       frame-ancestors 'none';
     `;
 
     // Production CSP: stricter
     const prodCsp = `
       default-src 'self';
-      script-src 'self' 'unsafe-eval' 'unsafe-inline' blob: https://www.googletagmanager.com;
-      style-src 'self' 'unsafe-inline' blob: https://fonts.googleapis.com;
-      font-src 'self' https://fonts.gstatic.com;
-      connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com https://api.vapi.ai https://c.daily.co https://*.daily.co https://o77906.ingest.sentry.io wss://*.daily.co wss://*.wss.daily.co;
-      img-src 'self' data: https://www.googletagmanager.com https://www.google-analytics.com https://flagcdn.com;
-      media-src 'self' blob: data:;
-      worker-src 'self' blob:;
-      child-src 'self' blob:;
-      frame-src 'self' blob:;
+      script-src 'self' 'unsafe-eval' 'unsafe-inline' blob: https://www.googletagmanager.com https://cdn.jsdelivr.net;
+      style-src 'self' 'unsafe-inline' blob: https://fonts.googleapis.com https://cdn.jsdelivr.net;
+      font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net;
+      connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com https://api.vapi.ai https://c.daily.co https://*.daily.co https://o77906.ingest.sentry.io https://cdn.jsdelivr.net wss://*.daily.co wss://*.wss.daily.co;
+      img-src 'self' data: https://www.googletagmanager.com https://www.google-analytics.com https://flagcdn.com https://cdn.jsdelivr.net;
+      media-src 'self' blob: data: https://cdn.jsdelivr.net;
+      worker-src 'self' blob: https://cdn.jsdelivr.net;
+      child-src 'self' blob: https://cdn.jsdelivr.net;
+      frame-src 'self' blob: https://cdn.jsdelivr.net;
       frame-ancestors 'none';
     `;
 
