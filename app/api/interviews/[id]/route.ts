@@ -200,6 +200,7 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
         feedback,
         duration,
         tone,
+        is_conducted: true,
       })
       .eq("id", id);
 

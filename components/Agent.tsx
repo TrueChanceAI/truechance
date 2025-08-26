@@ -586,13 +586,9 @@ const Agent = ({
         {/* User Profile Card */}
         <div className="card-border">
           <div className="card-content">
-            <Image
-              src="/user-avatar.png" // Replace with your own image path if you want a personal photo
-              alt="profile-image"
-              width={539}
-              height={539}
-              className="rounded-full object-cover size-[120px]"
-            />
+            <div className="rounded-full size-[120px] bg-primary-200 flex items-center justify-center text-2xl font-bold text-dark-100">
+              {userName.charAt(0).toUpperCase()}
+            </div>
             <h3>{userName}</h3>
           </div>
         </div>
@@ -716,14 +712,15 @@ const Agent = ({
                   t("interview.returnToDashboard")
                 )}
               </button>
-              {interviewId && (
-                <button
-                  className="w-full sm:w-auto text-white font-medium rounded-lg text-xs sm:text-sm px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 text-center bg-zinc-700 hover:bg-zinc-600 focus:ring-4 focus:outline-none focus:ring-zinc-300 dark:focus:ring-zinc-800 transition-all duration-200"
-                  onClick={() => router.push(`/interview/${interviewId}`)}
-                >
-                  {t("interview.retakeInterview")}
-                </button>
-              )}
+
+              <button
+                className="w-full sm:w-auto text-black font-medium rounded-lg text-xs sm:text-sm px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 text-center bg-gradient-to-br from-green-400 to-emerald-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 transition-all duration-200"
+                onClick={() => {
+                  router.push(`/interview/${interviewId}/feedback`);
+                }}
+              >
+                View Feedback
+              </button>
             </div>
           </div>
         </div>
