@@ -8,6 +8,7 @@ import {
   analyzeTone,
   generateInterviewFeedback,
   updateInterview,
+  updateInterviewConducted,
 } from "@/services/interview";
 import { toast } from "sonner";
 import { IAPIError } from "@/types/api";
@@ -18,6 +19,7 @@ import {
   IAnalyzeToneResponse,
   IInterviewFeedbackResponse,
   IUpdateInterviewResponse,
+  IUpdateInterviewConductedResponse,
 } from "@/types/interview";
 import { queryRetry } from "@/lib/api/client";
 
@@ -211,6 +213,40 @@ export const useUpdateInterview = () => {
 
   return {
     updateInterview: mutateAsync,
+    error,
+    isError,
+    isLoading: isPending,
+    isSuccess,
+  };
+};
+
+export const useUpdateInterviewConducted = () => {
+  const queryClient = useQueryClient();
+
+  const onSuccess = (data: IUpdateInterviewConductedResponse) => {
+    toast.success("Interview status updated successfully");
+    // Invalidate relevant queries to refresh the data
+    queryClient.invalidateQueries({ queryKey: ["interviews"] });
+    queryClient.invalidateQueries({ queryKey: ["interview"] });
+  };
+
+  const onError = (error: IAPIError) => {
+    toast.error(
+      (error?.response as any)?.data?.error ||
+        (error?.response as any)?.message ||
+        error?.message ||
+        "Failed to update interview status"
+    );
+  };
+
+  const { mutateAsync, isPending, isSuccess, isError, error } = useMutation({
+    mutationFn: updateInterviewConducted,
+    onSuccess,
+    onError,
+  });
+
+  return {
+    updateInterviewConducted: mutateAsync,
     error,
     isError,
     isLoading: isPending,

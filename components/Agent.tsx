@@ -19,6 +19,7 @@ import {
   useAnalyzeTone,
   useGenerateInterviewFeedback,
   useUpdateInterview,
+  useUpdateInterviewConducted,
 } from "@/hooks/interview";
 
 enum CallStatus {
@@ -93,6 +94,7 @@ const Agent = ({
   const { analyzeTone } = useAnalyzeTone();
   const { generateInterviewFeedback } = useGenerateInterviewFeedback();
   const { updateInterview } = useUpdateInterview();
+  const { updateInterviewConducted } = useUpdateInterviewConducted();
 
   useEffect(() => {
     const onCallStart = () => {
@@ -374,6 +376,17 @@ const Agent = ({
         }
       }
       setFeedback(feedbackData);
+
+      // Update interview conducted state to true
+      if (interviewId) {
+        try {
+          await updateInterviewConducted(interviewId);
+          console.log("✅ Interview conducted state updated to true");
+        } catch (error) {
+          console.error("Error updating interview conducted state:", error);
+        }
+      }
+
       await saveToSupabase(messages, feedbackData, toneResult);
     } catch {
       const feedbackData = { raw: "Could not generate feedback." };

@@ -8,6 +8,7 @@ import {
   TAnalyzeToneService,
   TInterviewFeedbackService,
   TUpdateInterviewService,
+  TUpdateInterviewConductedService,
 } from "@/types/interview";
 
 export const getInterviews: TGetAllInterviewsService = async () => {
@@ -64,3 +65,10 @@ export const updateInterview: TUpdateInterviewService = async (id, payload) => {
   const { data } = await clientApi.put(`/interviews/${id}`, payload);
   return data;
 };
+
+export const updateInterviewConducted: TUpdateInterviewConductedService =
+  async (id) => {
+    const { data } = await clientApi.patch(`/interviews/${id}`);
+
+    return data;
+  };

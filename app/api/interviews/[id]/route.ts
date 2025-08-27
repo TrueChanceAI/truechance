@@ -200,7 +200,6 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
         feedback,
         duration,
         tone,
-        is_conducted: true,
       })
       .eq("id", id);
 
@@ -214,6 +213,77 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("❌ Error saving interview data:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(req: NextRequest, { params }: RouteParams) {
+  try {
+    const { id } = await params;
+    const body = await req.json();
+
+    const authResult = await requireAuth(req);
+    if (!authResult.user) {
+      return createUnauthorizedResponse(
+        authResult.error || "Authentication required"
+      );
+    }
+
+    const userId = authResult.user.id;
+    if (!userId || userId === "unknown") {
+      return createUnauthorizedResponse("Invalid token subject");
+    }
+
+    const { data: interview, error: interview_error } = await supabaseServer
+      .from("interviews")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (interview_error) {
+      return NextResponse.json(
+        { error: "Interview not found" },
+        { status: 404 }
+      );
+    }
+
+    if (!interview) {
+      return NextResponse.json(
+        { error: "Interview not found" },
+        { status: 404 }
+      );
+    }
+
+    if (interview.user_id !== userId) {
+      return NextResponse.json(
+        { error: "You are not authorized to update this interview" },
+        { status: 403 }
+      );
+    }
+
+    const { error } = await supabaseServer
+      .from("interviews")
+      .update({
+        is_conducted: true,
+      })
+      .eq("id", id);
+
+    if (error) {
+      return NextResponse.json(
+        { error: "Failed to update interview" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("❌ Error updating interview data:", error);
     return NextResponse.json(
       {
         success: false,

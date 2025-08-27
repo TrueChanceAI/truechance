@@ -103,6 +103,10 @@ export interface IUpdateInterviewResponse extends IAPIResponse {
   interview: Interview;
 }
 
+export interface IUpdateInterviewConductedResponse extends IAPIResponse {
+  success: boolean;
+}
+
 export type TExtractResumeService = (
   payload: IExtractResumeRequest
 ) => Promise<IExtractResumeResponse>;
@@ -132,3 +136,7 @@ export type TUpdateInterviewService = (
   id: string,
   payload: IUpdateInterviewRequest
 ) => Promise<IUpdateInterviewResponse>;
+
+export type TUpdateInterviewConductedService = (
+  id: string
+) => Promise<IUpdateInterviewConductedResponse>;
