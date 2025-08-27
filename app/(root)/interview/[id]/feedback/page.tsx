@@ -8,6 +8,7 @@ import { useParams } from "next/navigation";
 import { useGetInterviewById } from "@/hooks/interview";
 import { Button } from "@/components/ui/button";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { generateInterviewPdf } from "@/lib/utils";
 
 const Feedback = () => {
   const params = useParams();
@@ -66,13 +67,27 @@ const Feedback = () => {
   const feedback = interview.feedback;
   const feedbackEntries = Object.entries(feedback);
 
+  const handleGenerateReport = async () => {
+    try {
+      await generateInterviewPdf(interview, {
+        includeFeedback: true,
+        filenamePrefix: "Interview_Feedback",
+      });
+    } catch (err) {
+      console.error("Failed to generate feedback PDF", err);
+    }
+  };
+
   return (
     <ProtectedRoute>
       <section className="section-feedback px-4 sm:px-0">
-        <div className="flex flex-col sm:flex-row justify-center text-center sm:text-left">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold">
             Interview Feedback
           </h1>
+          <Button className="btn-secondary" onClick={handleGenerateReport}>
+            Generate Report
+          </Button>
         </div>
 
         <div className="flex flex-col sm:flex-row justify-center mt-4 sm:mt-6">
@@ -150,32 +165,18 @@ const Feedback = () => {
           </div>
         </div>
 
-        {/* Interview Questions */}
-        {interview.interview_questions &&
-          interview.interview_questions.length > 0 && (
-            <div className="mt-8">
-              <h2 className="text-xl sm:text-2xl font-semibold mb-4">
-                Interview Questions
-              </h2>
-              <div className="bg-zinc-900 rounded-xl p-6 border border-zinc-700">
-                <div className="space-y-3">
-                  {interview.interview_questions.map(
-                    (question: string, index: number) => (
-                      <div key={index} className="flex gap-3">
-                        <span className="text-primary-200 font-semibold text-sm min-w-[20px]">
-                          {index + 1}.
-                        </span>
-                        <p className="text-light-100 text-sm">{question}</p>
-                      </div>
-                    )
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
         {/* Action Buttons */}
-        <div className="buttons mt-8 flex justify-center">
+        <div className="buttons mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+          <Button className="btn-primary max-w-xs">
+            <Link
+              href={`/interview/${id}`}
+              className="flex w-full justify-center"
+            >
+              <p className="text-sm font-semibold text-black text-center">
+                View Details
+              </p>
+            </Link>
+          </Button>
           <Button className="btn-secondary max-w-xs">
             <Link href="/" className="flex w-full justify-center">
               <p className="text-sm font-semibold text-primary-200 text-center">

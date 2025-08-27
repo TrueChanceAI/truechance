@@ -16,6 +16,7 @@ import { useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
 import DisplayTechIcons from "@/components/DisplayTechIcons";
 import Agent from "@/components/Agent";
+import { generateInterviewPdf } from "@/lib/utils";
 
 function InterviewContent() {
   const params = useParams();
@@ -72,8 +73,36 @@ function InterviewContent() {
     );
   }
 
-  const isConducted = interview.is_conducted === "true";
+  const isConducted = Boolean(interview.is_conducted);
   const hasPaymentId = interview.payment_id;
+  const uniqueSkills: string[] = (() => {
+    if (!interview.skills) return [];
+    const items = interview.skills
+      .split(",")
+      .map((s: string) => s.trim())
+      .filter(Boolean);
+    const seen = new Set<string>();
+    const result: string[] = [];
+    for (const s of items) {
+      const key = s.toLowerCase();
+      if (!seen.has(key)) {
+        seen.add(key);
+        result.push(s);
+      }
+    }
+    return result;
+  })();
+
+  const handleGenerateReport = async () => {
+    try {
+      await generateInterviewPdf(interview, {
+        includeFeedback: true,
+        filenamePrefix: "Interview",
+      });
+    } catch (err) {
+      console.error("Failed to generate PDF", err);
+    }
+  };
 
   return (
     <ProtectedRoute>
@@ -94,6 +123,11 @@ function InterviewContent() {
             </div>
 
             <DisplayTechIcons techStack={interview.skills.split(", ")} />
+          </div>
+          <div className="flex items-start sm:items-center">
+            <Button className="btn-secondary" onClick={handleGenerateReport}>
+              Generate Report
+            </Button>
           </div>
         </div>
 
@@ -193,37 +227,22 @@ function InterviewContent() {
           </div>
         </div>
 
-        {/* Interview Questions Section */}
-        {interview.interview_questions &&
-          interview.interview_questions.length > 0 && (
-            <div className="bg-zinc-900 rounded-xl p-6 border border-zinc-700 mb-6">
-              <h2 className="text-xl font-semibold text-primary-200 mb-4">
-                Interview Questions
-              </h2>
-              <div className="space-y-3">
-                {interview.interview_questions.map(
-                  (question: string, index: number) => (
-                    <div key={index} className="flex gap-3">
-                      <span className="text-primary-200 font-semibold text-sm min-w-[20px]">
-                        {index + 1}.
-                      </span>
-                      <p className="text-light-100 text-sm">{question}</p>
-                    </div>
-                  )
-                )}
-              </div>
-            </div>
-          )}
-
         {/* Skills Section */}
-        {interview.skills && (
+        {uniqueSkills.length > 0 && (
           <div className="bg-zinc-900 rounded-xl p-6 border border-zinc-700 mb-6">
             <h2 className="text-xl font-semibold text-primary-200 mb-4">
               Skills & Technologies
             </h2>
-            <p className="text-light-100 text-sm leading-relaxed">
-              {interview.skills}
-            </p>
+            <div className="flex flex-wrap gap-2">
+              {uniqueSkills.map((skill: string) => (
+                <span
+                  key={skill}
+                  className="text-xs font-medium px-2 py-1 rounded-full bg-zinc-800 text-zinc-200 border border-zinc-700"
+                >
+                  {skill}
+                </span>
+              ))}
+            </div>
           </div>
         )}
 

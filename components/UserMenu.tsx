@@ -104,6 +104,29 @@ export function UserMenu() {
           </button>
 
           <button
+            onClick={() => {
+              router.push("/interviews");
+              setIsOpen(false);
+            }}
+            className="w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors flex items-center gap-2"
+          >
+            <svg
+              className="w-4 h-4 flex-shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 7h18M3 12h18M3 17h18"
+              />
+            </svg>
+            <span className="truncate">Interviews</span>
+          </button>
+
+          <button
             onClick={handleSignOut}
             className="w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors flex items-center gap-2"
           >
