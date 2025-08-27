@@ -382,6 +382,9 @@ const Agent = ({
         try {
           await updateInterviewConducted(interviewId);
           console.log("✅ Interview conducted state updated to true");
+
+          // Email report will be sent automatically by the API endpoint
+          console.log("📧 Interview report email will be sent automatically");
         } catch (error) {
           console.error("Error updating interview conducted state:", error);
         }

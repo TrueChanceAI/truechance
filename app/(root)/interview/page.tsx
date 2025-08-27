@@ -145,7 +145,7 @@ function InterviewProtectedRoute({ children }: { children: React.ReactNode }) {
   }
 
   // Check if interview is already conducted (handle both string and boolean types)
-  const isConducted = String(interview.is_conducted).toLowerCase() === "true";
+  const isConducted = interview.is_conducted;
   if (isConducted) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">

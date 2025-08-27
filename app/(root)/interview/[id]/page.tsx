@@ -73,7 +73,7 @@ function InterviewContent() {
     );
   }
 
-  const isConducted = Boolean(interview.is_conducted);
+  const isConducted = interview.is_conducted;
   const hasPaymentId = interview.payment_id;
   const uniqueSkills: string[] = (() => {
     if (!interview.skills) return [];

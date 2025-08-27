@@ -85,7 +85,7 @@ export default function InterviewsPage() {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {interviews.map((it) => {
-              const isConducted = Boolean(it.is_conducted === "true");
+              const isConducted = it.is_conducted;
               return (
                 <div
                   key={it.id}

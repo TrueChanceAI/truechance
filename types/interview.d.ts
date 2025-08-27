@@ -13,7 +13,7 @@ export interface Interview {
   Email: string;
   "CV/Resume": string | null;
   skills: string;
-  is_conducted: string;
+  is_conducted: boolean;
   payment_id: string | null;
   interview_questions: string[];
   payment_status: string;

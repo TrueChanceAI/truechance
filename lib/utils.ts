@@ -298,7 +298,7 @@ export const generateInterviewPdf = async (
 
   // Meta section
   sectionTitle("Overview");
-  const isConducted = Boolean(interview?.is_conducted);
+  const isConducted = interview?.is_conducted;
   const overviewRows = [
     { label: "Candidate", value: interview?.candidate_name ?? "-" },
     {

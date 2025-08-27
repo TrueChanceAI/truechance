@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase-server";
 import { requireAuth, createUnauthorizedResponse } from "@/lib/auth-middleware";
+import { sendInterviewFeedbackReport } from "@/lib/mail";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -226,7 +227,6 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
 export async function PATCH(req: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    const body = await req.json();
 
     const authResult = await requireAuth(req);
     if (!authResult.user) {
@@ -267,6 +267,13 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
       );
     }
 
+    if (interview.is_conducted) {
+      return NextResponse.json(
+        { error: "Interview already conducted" },
+        { status: 400 }
+      );
+    }
+
     const { error } = await supabaseServer
       .from("interviews")
       .update({
@@ -279,6 +286,33 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
         { error: "Failed to update interview" },
         { status: 500 }
       );
+    }
+
+    // Send email report if interview is now conducted
+    try {
+      // Get user email from app_users table
+      const { data: user, error: userError } = await supabaseServer
+        .from("app_users")
+        .select("email")
+        .eq("id", userId)
+        .single();
+
+      if (!userError && user?.email) {
+        // Fetch the updated interview data for the email
+        const { data: updatedInterview } = await supabaseServer
+          .from("interviews")
+          .select("*")
+          .eq("id", id)
+          .single();
+
+        if (updatedInterview) {
+          await sendInterviewFeedbackReport(updatedInterview, user.email);
+          console.log("✅ Interview report email sent successfully");
+        }
+      }
+    } catch (emailError) {
+      console.error("❌ Error sending interview report email:", emailError);
+      // Don't fail the main request if email fails
     }
 
     return NextResponse.json({ success: true });
