@@ -237,27 +237,7 @@ export async function sendInterviewFeedbackReport(
           margin-bottom: 12px; 
           letter-spacing: -0.5px;
         }
-        .transcript-preview {
-          background: #f8fafc; 
-          padding: 24px; 
-          border-radius: 12px; 
-          border-left: 4px solid #667eea;
-          margin-top: 16px;
-        }
-        .transcript-text {
-          margin: 0; 
-          color: #475569; 
-          font-style: italic; 
-          line-height: 1.7; 
-          font-size: 15px;
-        }
-        .transcript-note {
-          text-align: center; 
-          margin-top: 20px; 
-          color: #94a3b8; 
-          font-size: 13px; 
-          font-style: italic;
-        }
+
         @media only screen and (max-width: 600px) {
           .content { padding: 30px 20px; }
           .header { padding: 30px 20px; }
@@ -318,24 +298,7 @@ export async function sendInterviewFeedbackReport(
             </table>
           </div>
           
-          <div class="section">
-            <h2 class="section-title">💬 Interview Transcript</h2>
-            <div class="transcript-preview">
-              <p class="transcript-text">
-                ${
-                  interview.transcript
-                    ? interview.transcript.substring(0, 350) +
-                      (interview.transcript.length > 350 ? "..." : "")
-                    : "No transcript available"
-                }
-              </p>
-            </div>
-            ${
-              interview.transcript && interview.transcript.length > 350
-                ? '<p class="transcript-note">Transcript preview shown above. View the complete transcript in your TrueChance dashboard.</p>'
-                : ""
-            }
-          </div>
+
         </div>
         
         <div class="footer">
@@ -387,12 +350,7 @@ ${
     : "No feedback available"
 }
 
-Transcript Preview:
-${
-  interview.transcript
-    ? interview.transcript.substring(0, 200) + "..."
-    : "No transcript available"
-}
+
 
 Thank you for using TrueChance!
   `;
