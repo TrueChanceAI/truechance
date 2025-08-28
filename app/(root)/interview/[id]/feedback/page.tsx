@@ -16,6 +16,13 @@ const Feedback = () => {
 
   const { interview, isLoading, isError } = useGetInterviewById(id);
 
+  // Language support
+  const isRTL = interview?.language === "ar";
+  const dir = isRTL ? "rtl" : "ltr";
+
+  // Translation helper function
+  const t = (en: string, ar: string) => (isRTL ? ar : en);
+
   if (isLoading) {
     return (
       <section className="section-feedback flex flex-col items-center justify-center min-h-[60vh] px-4 sm:px-0">
@@ -39,7 +46,9 @@ const Feedback = () => {
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             />
           </svg>
-          <span className="text-white">Loading feedback...</span>
+          <span className="text-white">
+            {t("Loading feedback...", "جاري تحميل التقييم...")}
+          </span>
         </div>
       </section>
     );
@@ -49,15 +58,18 @@ const Feedback = () => {
     return (
       <section className="section-feedback flex flex-col items-center justify-center min-h-[60vh] px-4 sm:px-0">
         <h1 className="text-2xl sm:text-3xl font-semibold mb-4 text-red-400 text-center">
-          Feedback Not Found
+          {t("Feedback Not Found", "التقييم غير موجود")}
         </h1>
         <p className="mb-6 text-base sm:text-lg text-center text-light-100 max-w-xl px-4">
-          Sorry, we couldn't find feedback for this interview. It may not have
-          been generated yet, or there was an error. Please try again later or
-          contact support if the problem persists.
+          {t(
+            "Sorry, we couldn't find feedback for this interview. It may not have been generated yet, or there was an error. Please try again later or contact support if the problem persists.",
+            "عذراً، لم نتمكن من العثور على تقييم لهذه المقابلة. قد لا يكون قد تم إنشاؤه بعد، أو حدث خطأ. يرجى المحاولة مرة أخرى لاحقاً أو الاتصال بالدعم إذا استمرت المشكلة."
+          )}
         </p>
         <Button className="btn-primary">
-          <Link href="/">Return to Dashboard</Link>
+          <Link href="/">
+            {t("Return to Dashboard", "العودة إلى لوحة التحكم")}
+          </Link>
         </Button>
       </section>
     );
@@ -71,119 +83,91 @@ const Feedback = () => {
     try {
       await generateInterviewPdf(interview, {
         includeFeedback: true,
-        filenamePrefix: "Interview_Feedback",
+        filenamePrefix: t("Interview_Feedback", "تقييم_المقابلة"),
       });
     } catch (err) {
-      console.error("Failed to generate feedback PDF", err);
+      console.error(
+        t("Failed to generate feedback PDF", "فشل في إنشاء ملف PDF للتقييم"),
+        err
+      );
     }
   };
 
   return (
     <ProtectedRoute>
-      <section className="section-feedback px-4 sm:px-0">
+      <section className="section-feedback px-4 sm:px-0" dir={dir}>
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold">
-            Interview Feedback
+            {t("Interview Feedback", "تقييم المقابلة")}
           </h1>
-          <Button className="btn-secondary" onClick={handleGenerateReport}>
-            Generate Report
-          </Button>
+          <div className="flex gap-3">
+            <Button className="btn-secondary" onClick={handleGenerateReport}>
+              {t("Generate Report", "إنشاء تقرير")}
+            </Button>
+            <Button className="btn-outline">
+              <Link href={`/interview/${id}`}>
+                {t("View Details", "عرض التفاصيل")}
+              </Link>
+            </Button>
+          </div>
         </div>
 
         <div className="flex flex-col sm:flex-row justify-center mt-4 sm:mt-6">
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-5">
             {/* Candidate Name */}
             <div className="flex flex-row gap-2 items-center justify-center sm:justify-start">
-              <Image
-                src="/profile.svg"
-                width={18}
-                height={18}
-                className="sm:w-[22px] sm:h-[22px]"
-                alt="profile"
-              />
-              <p className="text-sm sm:text-base">
-                Candidate:{" "}
-                <span className="text-primary-200 font-bold">
-                  {interview.candidate_name}
-                </span>
-              </p>
+              <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-blue-600 rounded-full flex items-center justify-center text-sm font-bold text-white">
+                {interview.candidate_name.charAt(0).toUpperCase()}
+              </div>
+              <span className="text-light-100">
+                {t("Candidate:", "المرشح:")} {interview.candidate_name}
+              </span>
             </div>
 
-            {/* Duration */}
+            {/* Interview Date */}
             <div className="flex flex-row gap-2 items-center justify-center sm:justify-start">
-              <Image
-                src="/calendar.svg"
-                width={18}
-                height={18}
-                className="sm:w-[22px] sm:h-[22px]"
-                alt="calendar"
-              />
-              <p className="text-sm sm:text-base">
-                Duration:{" "}
-                <span className="text-primary-200 font-bold">
-                  {interview.duration}
-                </span>
-              </p>
+              <span className="text-light-100">
+                {t("Date:", "التاريخ:")}{" "}
+                {dayjs(interview.created_at).format(
+                  isRTL ? "MMM D, YYYY" : "MMM D, YYYY"
+                )}
+              </span>
             </div>
 
-            {/* Date */}
-            <div className="flex flex-row gap-2 items-center justify-center sm:justify-start">
-              <Image
-                src="/calendar.svg"
-                width={18}
-                height={18}
-                className="sm:w-[22px] sm:h-[22px]"
-                alt="calendar"
-              />
-              <p className="text-sm sm:text-base">
-                {interview.created_at
-                  ? dayjs(interview.created_at).format("MMM D, YYYY h:mm A")
-                  : "N/A"}
-              </p>
-            </div>
+            {/* Interview Duration */}
+            {interview.duration && (
+              <div className="flex flex-row gap-2 items-center justify-center sm:justify-start">
+                <span className="text-light-100">
+                  {t("Duration:", "المدة:")} {interview.duration}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
-        <hr className="my-6" />
+        {/* Feedback Grid */}
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+          {feedbackEntries.map(([key, value]) => {
+            const formattedKey = key
+              .replace(/_/g, " ")
+              .split(" ")
+              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(" ");
 
-        {/* Feedback Sections */}
-        <div className="w-full max-w-4xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {feedbackEntries.map(([key, value], index) => (
+            return (
               <div
                 key={key}
-                className="bg-zinc-900 rounded-xl p-6 border border-zinc-700 shadow-sm hover:shadow-lg transition-shadow duration-200"
+                className="bg-zinc-900 rounded-xl p-6 border border-zinc-700 hover:border-purple-500/50 transition-colors"
               >
-                <h3 className="text-lg font-semibold text-primary-200 mb-3 capitalize">
-                  {key.replace(/_/g, " ")}
+                <h3 className="text-lg font-semibold text-primary-200 mb-3">
+                  {formattedKey}
                 </h3>
-                <p className="text-light-100 leading-relaxed text-sm">
-                  {value as string}
+                <p className="text-light-100 leading-relaxed">
+                  {typeof value === "string" ? value : JSON.stringify(value)}
                 </p>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="buttons mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-          <Button className="btn-primary max-w-xs">
-            <Link
-              href={`/interview/${id}`}
-              className="flex w-full justify-center"
-            >
-              <p className="text-sm font-semibold text-black text-center">
-                View Details
-              </p>
-            </Link>
-          </Button>
-          <Button className="btn-secondary max-w-xs">
-            <Link href="/" className="flex w-full justify-center">
-              <p className="text-sm font-semibold text-primary-200 text-center">
-                Back to Dashboard
-              </p>
-            </Link>
-          </Button>
+            );
+          })}
         </div>
       </section>
     </ProtectedRoute>

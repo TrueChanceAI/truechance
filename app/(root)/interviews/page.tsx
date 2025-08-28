@@ -13,6 +13,14 @@ export default function InterviewsPage() {
   const router = useRouter();
   const { interviews, isLoading, isError } = useGetAllInterviews();
 
+  // Language support - we'll use the first interview's language or default to English
+  const firstInterview = interviews?.[0];
+  const isRTL = firstInterview?.language === "ar";
+  const dir = isRTL ? "rtl" : "ltr";
+
+  // Translation helper function
+  const t = (en: string, ar: string) => (isRTL ? ar : en);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -36,7 +44,9 @@ export default function InterviewsPage() {
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             />
           </svg>
-          <span className="text-white">Loading interviews...</span>
+          <span className="text-white">
+            {t("Loading interviews...", "جاري تحميل المقابلات...")}
+          </span>
         </div>
       </div>
     );
@@ -47,10 +57,10 @@ export default function InterviewsPage() {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="bg-zinc-900 rounded-2xl p-8 flex flex-col items-center gap-4">
           <h1 className="text-2xl font-semibold text-red-400">
-            Failed to load interviews
+            {t("Failed to load interviews", "فشل في تحميل المقابلات")}
           </h1>
           <Button className="btn-primary" onClick={() => router.refresh()}>
-            Retry
+            {t("Retry", "إعادة المحاولة")}
           </Button>
         </div>
       </div>
@@ -59,33 +69,42 @@ export default function InterviewsPage() {
 
   return (
     <ProtectedRoute>
-      <section className="px-4 sm:px-0">
+      <section className="px-4 sm:px-0" dir={dir}>
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl sm:text-3xl font-semibold">
-            Your Interviews
+            {t("Your Interviews", "مقابلاتك")}
           </h1>
           <Button
             className="btn-primary"
             onClick={() => router.push("/upload-resume")}
           >
-            New Interview
+            {t("New Interview", "مقابلة جديدة")}
           </Button>
         </div>
 
         {!interviews || interviews.length === 0 ? (
           <div className="bg-zinc-900 rounded-xl p-6 border border-zinc-700 text-center">
-            <p className="text-light-100 mb-4">No interviews yet.</p>
+            <p className="text-light-100 mb-4">
+              {t("No interviews yet.", "لا توجد مقابلات بعد.")}
+            </p>
             <Button
               className="btn-primary"
               onClick={() => router.push("/upload-resume")}
             >
-              Create Interview
+              {t("Create Interview", "إنشاء مقابلة")}
             </Button>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {interviews.map((it) => {
               const isConducted = it.is_conducted;
+              const interviewLanguage =
+                it.language === "ar"
+                  ? isRTL
+                    ? "العربية"
+                    : "Arabic"
+                  : it.language || (isRTL ? "الإنجليزية" : "English");
+
               return (
                 <div
                   key={it.id}
@@ -102,13 +121,13 @@ export default function InterviewsPage() {
                       />
                       <div className="min-w-0">
                         <h3 className="text-base font-semibold truncate">
-                          {it.candidate_name} Interview
+                          {t("Interview", "مقابلة")} {it.candidate_name}
                         </h3>
                         <p className="text-xs text-zinc-400 truncate">
-                          {it.language || "en"} •{" "}
+                          {interviewLanguage} •{" "}
                           {it.created_at
                             ? dayjs(it.created_at).format("MMM D, YYYY h:mm A")
-                            : "N/A"}
+                            : t("N/A", "غير متوفر")}
                         </p>
                       </div>
                     </div>
@@ -119,7 +138,9 @@ export default function InterviewsPage() {
                           : "text-yellow-300 bg-yellow-900/30"
                       }`}
                     >
-                      {isConducted ? "Completed" : "Not Conducted"}
+                      {isConducted
+                        ? t("Completed", "مكتمل")
+                        : t("Not Conducted", "لم يتم إجراؤها")}
                     </span>
                   </div>
 
@@ -136,7 +157,7 @@ export default function InterviewsPage() {
                           className="btn-primary flex-1"
                           onClick={() => router.push(`/interview/${it.id}`)}
                         >
-                          View Details
+                          {t("View Details", "عرض التفاصيل")}
                         </Button>
                         <Button
                           className="btn-secondary flex-1"
@@ -144,7 +165,7 @@ export default function InterviewsPage() {
                             router.push(`/interview/${it.id}/feedback`)
                           }
                         >
-                          View Feedback
+                          {t("View Feedback", "عرض التقييم")}
                         </Button>
                       </>
                     ) : (
@@ -158,14 +179,14 @@ export default function InterviewsPage() {
                               )
                             }
                           >
-                            Start Interview
+                            {t("Start Interview", "بدء المقابلة")}
                           </Button>
                         ) : (
                           <Button
                             className="btn-secondary flex-1"
                             onClick={() => router.push(`/interview/${it.id}`)}
                           >
-                            View Details
+                            {t("View Details", "عرض التفاصيل")}
                           </Button>
                         )}
                       </>

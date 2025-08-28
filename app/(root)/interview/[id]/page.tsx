@@ -26,6 +26,13 @@ function InterviewContent() {
 
   const { interview, isLoading, isError } = useGetInterviewById(id);
 
+  // Language support
+  const isRTL = interview?.language === "ar";
+  const dir = isRTL ? "rtl" : "ltr";
+
+  // Translation helper function
+  const t = (en: string, ar: string) => (isRTL ? ar : en);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -49,7 +56,9 @@ function InterviewContent() {
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             />
           </svg>
-          <span className="text-white">Loading interview...</span>
+          <span className="text-white">
+            {t("Loading interview...", "جاري تحميل المقابلة...")}
+          </span>
         </div>
       </div>
     );
@@ -60,13 +69,16 @@ function InterviewContent() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="bg-zinc-900 rounded-2xl p-8 flex flex-col items-center gap-4">
           <h1 className="text-2xl font-semibold text-red-400">
-            Interview Not Found
+            {t("Interview Not Found", "المقابلة غير موجودة")}
           </h1>
           <p className="text-light-100 text-center">
-            The interview you're looking for doesn't exist.
+            {t(
+              "The interview you're looking for doesn't exist.",
+              "المقابلة التي تبحث عنها غير موجودة."
+            )}
           </p>
           <Button className="btn-primary" onClick={() => router.push("/")}>
-            Back to Dashboard
+            {t("Back to Dashboard", "العودة إلى لوحة التحكم")}
           </Button>
         </div>
       </div>
@@ -97,211 +109,163 @@ function InterviewContent() {
     try {
       await generateInterviewPdf(interview, {
         includeFeedback: true,
-        filenamePrefix: "Interview",
+        filenamePrefix: t("Interview", "مقابلة"),
       });
     } catch (err) {
-      console.error("Failed to generate PDF", err);
+      console.error(t("Failed to generate PDF", "فشل في إنشاء ملف PDF"), err);
+    }
+  };
+
+  const handleStartInterview = () => {
+    if (hasPaymentId) {
+      router.push(`/interview?paymentId=${hasPaymentId}&interviewId=${id}`);
     }
   };
 
   return (
     <ProtectedRoute>
-      <div className="px-4 sm:px-0">
-        <div className="flex flex-col sm:flex-row gap-4 justify-between mb-6">
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-            <div className="flex flex-row gap-3 sm:gap-4 items-center">
-              {/* <Image
-                src={getRandomInterviewCover()}
-                alt="cover-image"
-                width={40}
-                height={40}
-                className="rounded-full object-cover size-[40px] flex-shrink-0"
-              /> */}
-              <h3 className="capitalize text-lg sm:text-xl font-semibold">
-                {interview.candidate_name} Interview
-              </h3>
+      <div
+        className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900"
+        dir={dir}
+      >
+        <UserMenu />
+
+        <div className="container mx-auto px-4 py-8">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl md:text-4xl font-bold text-white mb-4 text-center">
+              {t("Interview Details", "تفاصيل المقابلة")}
+            </h1>
+            <div className="flex justify-center">
+              <Button className="btn-secondary" onClick={handleGenerateReport}>
+                {t("Generate Report", "إنشاء تقرير")}
+              </Button>
+            </div>
+          </div>
+
+          {/* Interview Card */}
+          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 md:p-8 border border-white/20">
+            {/* Candidate Info */}
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-600 rounded-full flex items-center justify-center text-2xl font-bold text-white">
+                {interview.candidate_name.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-white">
+                  {t("Candidate:", "المرشح:")} {interview.candidate_name}
+                </h2>
+                <p className="text-gray-300">
+                  {t("Created on", "تم إنشاؤها في")}{" "}
+                  {dayjs(interview.created_at).format(
+                    isRTL ? "MMM D, YYYY h:mm A" : "MMM D, YYYY h:mm A"
+                  )}
+                </p>
+              </div>
             </div>
 
-            <DisplayTechIcons techStack={interview.skills.split(", ")} />
-          </div>
-          <div className="flex items-start sm:items-center">
-            <Button className="btn-secondary" onClick={handleGenerateReport}>
-              Generate Report
-            </Button>
-          </div>
-        </div>
-
-        {/* Interview Details Section */}
-        <div className="bg-zinc-900 rounded-xl p-6 border border-zinc-700 mb-6">
-          <h2 className="text-xl font-semibold text-primary-200 mb-4">
-            Interview Details
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <span className="text-light-100">Candidate:</span>
-                <span className="text-primary-200 font-semibold">
-                  {interview.candidate_name}
-                </span>
+            {/* Interview Details Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-400 block mb-2">
+                    {t("Duration", "المدة")}
+                  </label>
+                  <p className="text-white text-lg">
+                    {interview.duration || t("N/A", "غير متوفر")}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-400 block mb-2">
+                    {t("Language", "اللغة")}
+                  </label>
+                  <p className="text-white text-lg">
+                    {interview.language === "ar"
+                      ? t("Arabic", "العربية")
+                      : interview.language || t("English", "الإنجليزية")}
+                  </p>
+                </div>
               </div>
 
-              <div className="flex items-center gap-3">
-                <Image
-                  src="/calendar.svg"
-                  width={18}
-                  height={18}
-                  alt="calendar"
-                />
-                <span className="text-light-100">Created:</span>
-                <span className="text-primary-200 font-semibold">
-                  {interview.created_at
-                    ? dayjs(interview.created_at).format("MMM D, YYYY h:mm A")
-                    : "N/A"}
-                </span>
-              </div>
-
-              {isConducted && interview.duration && (
-                <div className="flex items-center gap-3">
-                  <Image
-                    src="/calendar.svg"
-                    width={18}
-                    height={18}
-                    alt="duration"
-                  />
-                  <span className="text-light-100">Duration:</span>
-                  <span className="text-primary-200 font-semibold">
-                    {interview.duration}
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-400 block mb-2">
+                    {t("Status", "الحالة")}
+                  </label>
+                  <span
+                    className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                      isConducted
+                        ? "bg-green-100 text-green-800"
+                        : "bg-yellow-100 text-yellow-800"
+                    }`}
+                  >
+                    {isConducted
+                      ? t("✅ Completed", "✅ مكتمل")
+                      : t("⏳ Not Conducted", "⏳ لم يتم إجراؤها")}
                   </span>
                 </div>
-              )}
-
-              <div className="flex items-center gap-3">
-                <Image src="/globe.svg" width={18} height={18} alt="language" />
-                <span className="text-light-100">Language:</span>
-                <span className="text-primary-200 font-semibold capitalize">
-                  {interview.language || "English"}
-                </span>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <Image src="/star.svg" width={18} height={18} alt="status" />
-                <span className="text-light-100">Status:</span>
-                <span
-                  className={`font-semibold ${
-                    isConducted ? "text-green-400" : "text-yellow-400"
-                  }`}
-                >
-                  {isConducted ? "Completed" : "Not Conducted"}
-                </span>
-              </div>
-
-              {hasPaymentId && (
-                <div className="flex items-center gap-3">
-                  <Image src="/file.svg" width={18} height={18} alt="payment" />
-                  <span className="text-light-100">Payment Status:</span>
+                <div>
+                  <label className="text-sm font-medium text-gray-400 block mb-2">
+                    {t("Payment Status", "حالة الدفع")}
+                  </label>
                   <span
-                    className={`font-semibold text-sm ${
+                    className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                       interview.payment_status === "completed"
-                        ? "text-green-400"
-                        : "text-yellow-400"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
                     }`}
                   >
                     {interview.payment_status === "completed"
-                      ? "Paid"
-                      : interview.payment_status}
+                      ? t("✅ Completed", "✅ مكتمل")
+                      : t("❌ Pending", "❌ معلق")}
                   </span>
                 </div>
-              )}
-
-              <div className="flex items-center gap-3">
-                <Image src="/file.svg" width={18} height={18} alt="payment" />
-                <span className="text-light-100">Payment ID:</span>
-                <span className="text-primary-200 font-semibold text-sm">
-                  {interview.payment_id}
-                </span>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Skills Section */}
-        {uniqueSkills.length > 0 && (
-          <div className="bg-zinc-900 rounded-xl p-6 border border-zinc-700 mb-6">
-            <h2 className="text-xl font-semibold text-primary-200 mb-4">
-              Skills & Technologies
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              {uniqueSkills.map((skill: string) => (
-                <span
-                  key={skill}
-                  className="text-xs font-medium px-2 py-1 rounded-full bg-zinc-800 text-zinc-200 border border-zinc-700"
-                >
-                  {skill}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
+            {/* Skills Section */}
+            {uniqueSkills.length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-xl font-semibold text-white mb-4">
+                  {t("Skills & Technologies", "المهارات والتقنيات")}
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {uniqueSkills.map((skill, index) => (
+                    <span
+                      key={index}
+                      className="bg-purple-600/20 text-purple-300 px-3 py-1 rounded-full text-sm border border-purple-500/30"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
-        {/* Action Section */}
-        <div className="bg-zinc-900 rounded-xl p-6 border border-zinc-700">
-          <h2 className="text-xl font-semibold text-primary-200 mb-4">
-            Actions
-          </h2>
-
-          <div className="flex flex-col sm:flex-row gap-4">
-            {isConducted ? (
-              <>
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              {!isConducted && hasPaymentId ? (
                 <Button
-                  className="btn-primary flex-1"
+                  className="btn-primary text-lg px-8 py-3"
+                  onClick={handleStartInterview}
+                >
+                  {t("Start Interview", "بدء المقابلة")}
+                </Button>
+              ) : (
+                <Button
+                  className="btn-secondary text-lg px-8 py-3"
                   onClick={() => router.push(`/interview/${id}/feedback`)}
                 >
-                  View Feedback
+                  {t("View Feedback", "عرض التقييم")}
                 </Button>
-                <Button
-                  className="btn-secondary flex-1"
-                  onClick={() => router.push("/")}
-                >
-                  Back to Dashboard
-                </Button>
-              </>
-            ) : (
-              <>
-                {hasPaymentId ? (
-                  <Button
-                    className="btn-primary flex-1"
-                    onClick={() =>
-                      router.push(
-                        `/interview?paymentId=${interview.payment_id}&interviewId=${id}`
-                      )
-                    }
-                  >
-                    Start Interview
-                  </Button>
-                ) : (
-                  <div className="text-center w-full">
-                    <p className="text-light-100 mb-4">
-                      This interview requires payment to proceed.
-                    </p>
-                    <Button
-                      className="btn-primary"
-                      onClick={() => router.push("/upload-resume")}
-                    >
-                      Create New Interview
-                    </Button>
-                  </div>
-                )}
-                <Button
-                  className="btn-secondary flex-1"
-                  onClick={() => router.push("/")}
-                >
-                  Back to Dashboard
-                </Button>
-              </>
-            )}
+              )}
+
+              <Button
+                className="btn-outline text-lg px-8 py-3"
+                onClick={() => router.push("/interviews")}
+              >
+                {t("Back to Interviews", "العودة إلى المقابلات")}
+              </Button>
+            </div>
           </div>
         </div>
       </div>

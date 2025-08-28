@@ -64,7 +64,25 @@ export async function sendInterviewFeedbackReport(
 ): Promise<void> {
   const subject = `🎉 Interview Report - ${interview.candidate_name}`;
 
+  // Detect language and set RTL support
+  const isRTL = interview?.language === "ar";
+  const dir = isRTL ? "rtl" : "ltr";
+  const textAlign = isRTL ? "right" : "left";
+  const fontFamily = isRTL
+    ? "'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
+    : "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
+
   const formatDate = (dateString: string) => {
+    if (isRTL) {
+      // Arabic date format
+      return new Date(dateString).toLocaleDateString("ar-SA", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
@@ -87,12 +105,12 @@ export async function sendInterviewFeedbackReport(
 
         return `
           <tr>
-            <td style="padding: 16px 0; border-bottom: 1px solid #e5e7eb;">
+            <td style="padding: 16px 0; border-bottom: 1px solid #e5e7eb; text-align: ${textAlign};">
               <strong style="color: #1f2937; font-size: 16px; font-weight: 600;">${formattedKey}</strong>
             </td>
           </tr>
           <tr>
-            <td style="padding: 0 0 20px 0; color: #4b5563; line-height: 1.7; font-size: 15px;">
+            <td style="padding: 0 0 20px 0; color: #4b5563; line-height: 1.7; font-size: 15px; text-align: ${textAlign};">
               ${value}
             </td>
           </tr>
@@ -113,26 +131,28 @@ export async function sendInterviewFeedbackReport(
     return skillArray
       .map(
         (skill) =>
-          `<span style="display: inline-block; background: #f3f4f6; color: #374151; padding: 6px 14px; margin: 3px; border-radius: 25px; font-size: 14px; font-weight: 500; border: 1px solid #e5e7eb;">${skill}</span>`
+          `<span style="display: inline-block; background: #f3f4f6; color: #374151; padding: 6px 14px; margin: 3px; border-radius: 25px; font-size: 14px; font-weight: 500; border: 1px solid #e5e7eb; text-align: center;">${skill}</span>`
       )
       .join("");
   };
 
   const html = `
     <!DOCTYPE html>
-    <html lang="en">
+    <html lang="${interview?.language || "en"}" dir="${dir}">
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Interview Report - ${interview.candidate_name}</title>
       <style>
         body { 
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; 
+          font-family: ${fontFamily}; 
           line-height: 1.6; 
           color: #374151; 
           margin: 0; 
           padding: 0; 
           background-color: #f9fafb;
+          direction: ${dir};
+          text-align: ${textAlign};
         }
         .email-container { 
           max-width: 600px; 
@@ -173,12 +193,13 @@ export async function sendInterviewFeedbackReport(
           padding-bottom: 12px; 
           border-bottom: 3px solid #e5e7eb; 
           position: relative;
+          text-align: ${textAlign};
         }
         .section-title::after {
           content: '';
           position: absolute;
           bottom: -3px;
-          left: 0;
+          ${isRTL ? "right: 0;" : "left: 0;"}
           width: 60px;
           height: 3px;
           background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -198,12 +219,14 @@ export async function sendInterviewFeedbackReport(
           color: #374151; 
           width: 130px; 
           vertical-align: top;
+          text-align: ${textAlign};
         }
         .info-value { 
           display: table-cell; 
           padding: 12px 0; 
           color: #6b7280; 
           vertical-align: top;
+          text-align: ${textAlign};
         }
         .status-badge { 
           display: inline-block; 
@@ -217,6 +240,7 @@ export async function sendInterviewFeedbackReport(
         }
         .skills-container { 
           margin-top: 16px; 
+          text-align: ${textAlign};
         }
         .feedback-table { 
           width: 100%; 
@@ -227,7 +251,6 @@ export async function sendInterviewFeedbackReport(
           padding: 30px; 
           text-align: center; 
           color: #6b7280; 
-          font-size: 14px; 
           border-top: 1px solid #e5e7eb;
         }
         .logo { 
@@ -249,64 +272,89 @@ export async function sendInterviewFeedbackReport(
     <body>
       <div class="email-container">
         <div class="header">
-          <h1>🎉 Interview Completed!</h1>
-          <p>Your comprehensive interview report is ready</p>
+          <h1>🎉 ${isRTL ? "تم إكمال المقابلة!" : "Interview Completed!"}</h1>
+          <p>${
+            isRTL
+              ? "تقرير المقابلة الشامل جاهز"
+              : "Your comprehensive interview report is ready"
+          }</p>
         </div>
         
         <div class="content">
           <div class="section">
-            <h2 class="section-title">📋 Interview Overview</h2>
+            <h2 class="section-title">📋 ${
+              isRTL ? "نظرة عامة على المقابلة" : "Interview Overview"
+            }</h2>
             <div class="info-grid">
               <div class="info-row">
-                <div class="info-label">Candidate:</div>
+                <div class="info-label">${
+                  isRTL ? "المرشح:" : "Candidate:"
+                }</div>
                 <div class="info-value">${interview.candidate_name}</div>
               </div>
               <div class="info-row">
-                <div class="info-label">Date:</div>
+                <div class="info-label">${isRTL ? "التاريخ:" : "Date:"}</div>
                 <div class="info-value">${formatDate(
                   interview.created_at
                 )}</div>
               </div>
               <div class="info-row">
-                <div class="info-label">Duration:</div>
+                <div class="info-label">${isRTL ? "المدة:" : "Duration:"}</div>
                 <div class="info-value">${interview.duration || "N/A"}</div>
               </div>
               <div class="info-row">
-                <div class="info-label">Language:</div>
-                <div class="info-value">${interview.language || "English"}</div>
+                <div class="info-label">${isRTL ? "اللغة:" : "Language:"}</div>
+                <div class="info-value">${
+                  interview.language === "ar"
+                    ? "العربية"
+                    : interview.language || "English"
+                }</div>
               </div>
               <div class="info-row">
-                <div class="info-label">Status:</div>
+                <div class="info-label">${isRTL ? "الحالة:" : "Status:"}</div>
                 <div class="info-value">
-                  <span class="status-badge">✅ Completed</span>
+                  <span class="status-badge">✅ ${
+                    isRTL ? "مكتمل" : "Completed"
+                  }</span>
                 </div>
               </div>
             </div>
           </div>
           
           <div class="section">
-            <h2 class="section-title">🛠️ Skills & Technologies</h2>
+            <h2 class="section-title">🛠️ ${
+              isRTL ? "المهارات والتقنيات" : "Skills & Technologies"
+            }</h2>
             <div class="skills-container">
               ${formatSkills(interview.skills)}
             </div>
           </div>
           
           <div class="section">
-            <h2 class="section-title">📝 Interview Feedback</h2>
+            <h2 class="section-title">📝 ${
+              isRTL ? "تقييم المقابلة" : "Interview Feedback"
+            }</h2>
             <table class="feedback-table">
               ${formatFeedback(interview.feedback)}
             </table>
           </div>
-          
-
         </div>
         
         <div class="footer">
           <div class="logo">TrueChance</div>
-          <p style="margin: 8px 0; font-weight: 500;">Thank you for using TrueChance for your interview!</p>
+          <p style="margin: 8px 0; font-weight: 500;">
+            ${
+              isRTL
+                ? "شكراً لاستخدام TrueChance في مقابلتك!"
+                : "Thank you for using TrueChance for your interview!"
+            }
+          </p>
           <p style="margin: 20px 0 0 0; font-size: 12px; color: #9ca3af;">
-            This report was automatically generated after your interview completion.<br>
-            For any questions, please contact our support team.
+            ${
+              isRTL
+                ? "تم إنشاء هذا التقرير تلقائياً بعد إكمال المقابلة.<br>لأي أسئلة، يرجى الاتصال بفريق الدعم."
+                : "This report was automatically generated after your interview completion.<br>For any questions, please contact our support team."
+            }
           </p>
         </div>
       </div>
@@ -315,26 +363,30 @@ export async function sendInterviewFeedbackReport(
   `;
 
   const text = `
-Interview Report - ${interview.candidate_name}
+${isRTL ? "تقرير المقابلة" : "Interview Report"} - ${interview.candidate_name}
 
-Interview Overview:
-- Candidate: ${interview.candidate_name}
-- Date: ${formatDate(interview.created_at)}
-- Duration: ${interview.duration || "N/A"}
-- Language: ${interview.language || "English"}
-- Status: Completed
+${isRTL ? "نظرة عامة على المقابلة:" : "Interview Overview:"}
+- ${isRTL ? "المرشح" : "Candidate"}: ${interview.candidate_name}
+- ${isRTL ? "التاريخ" : "Date"}: ${formatDate(interview.created_at)}
+- ${isRTL ? "المدة" : "Duration"}: ${interview.duration || "N/A"}
+- ${isRTL ? "اللغة" : "Language"}: ${
+    interview.language === "ar" ? "العربية" : interview.language || "English"
+  }
+- ${isRTL ? "الحالة" : "Status"}: ${isRTL ? "مكتمل" : "Completed"}
 
-Skills & Technologies:
+${isRTL ? "المهارات والتقنيات:" : "Skills & Technologies:"}
 ${
   interview.skills
     ? interview.skills
         .split(",")
         .map((s: string) => s.trim())
         .join(", ")
+    : isRTL
+    ? "غير محدد"
     : "None specified"
 }
 
-Interview Feedback:
+${isRTL ? "تقييم المقابلة:" : "Interview Feedback:"}
 ${
   interview.feedback
     ? Object.entries(interview.feedback)
@@ -347,12 +399,12 @@ ${
               .join(" ")}: ${value}`
         )
         .join("\n\n")
+    : isRTL
+    ? "لا يوجد تقييم متاح"
     : "No feedback available"
 }
 
-
-
-Thank you for using TrueChance!
+${isRTL ? "شكراً لاستخدام TrueChance!" : "Thank you for using TrueChance!"}
   `;
 
   await sendEmail({

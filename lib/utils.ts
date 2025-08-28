@@ -121,14 +121,24 @@ export const generateInterviewPdf = async (
   options?: { includeFeedback?: boolean; filenamePrefix?: string }
 ) => {
   const jsPDF = await loadJsPdf();
-  const doc = new jsPDF({ unit: "pt", format: "a4" });
 
-  // Layout constants
+  // Detect language and set RTL support
+  const isRTL = interview?.language === "ar";
+  const doc = new jsPDF({
+    unit: "pt",
+    format: "a4",
+    orientation: isRTL ? "landscape" : "portrait", // Use landscape for RTL to accommodate text better
+  });
+
+  // Layout constants - adjust for RTL
   const page = {
     width: doc.internal.pageSize.getWidth(),
     height: doc.internal.pageSize.getHeight(),
   };
-  const margin = { x: 56, y: 64 };
+  const margin = {
+    x: isRTL ? page.width - 56 : 56, // Right margin for RTL, left for LTR
+    y: 64,
+  };
   const contentWidth = page.width - margin.x * 2;
   let y = margin.y;
 
@@ -173,7 +183,15 @@ export const generateInterviewPdf = async (
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
     doc.setTextColor(color.text);
-    doc.text(text, margin.x, y);
+
+    if (isRTL) {
+      // For RTL, align text to the right
+      const textWidth = doc.getTextWidth(text);
+      doc.text(text, margin.x - textWidth, y);
+    } else {
+      doc.text(text, margin.x, y);
+    }
+
     // bottom padding after heading
     y += spacing.sectionBottom;
   };
@@ -183,7 +201,14 @@ export const generateInterviewPdf = async (
     doc.setFont("helvetica", "bold");
     doc.setFontSize(20);
     doc.setTextColor(color.text);
-    doc.text(text, margin.x, y);
+
+    if (isRTL) {
+      const textWidth = doc.getTextWidth(text);
+      doc.text(text, margin.x - textWidth, y);
+    } else {
+      doc.text(text, margin.x, y);
+    }
+
     y += spacing.large;
   };
 
@@ -192,7 +217,14 @@ export const generateInterviewPdf = async (
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.setTextColor(color.subtle);
-    doc.text(text, margin.x, y);
+
+    if (isRTL) {
+      const textWidth = doc.getTextWidth(text);
+      doc.text(text, margin.x - textWidth, y);
+    } else {
+      doc.text(text, margin.x, y);
+    }
+
     doc.setTextColor(color.text);
     y += spacing.medium;
   };
@@ -208,9 +240,20 @@ export const generateInterviewPdf = async (
     rows.forEach((row, i) => {
       const col = i % columns;
       if (col === 0) ensureSpace(spacing.row);
-      const x = margin.x + col * colWidth;
-      const labelX = x;
-      const valueX = x + 110;
+
+      let x, labelX, valueX;
+      if (isRTL) {
+        // RTL layout: right to left
+        x = margin.x - col * colWidth;
+        labelX = x - 110;
+        valueX = x;
+      } else {
+        // LTR layout: left to right
+        x = margin.x + col * colWidth;
+        labelX = x;
+        valueX = x + 110;
+      }
+
       doc.setTextColor(color.subtle);
       doc.text(`${row.label}:`, labelX, y);
       doc.setTextColor(color.text);
@@ -233,6 +276,11 @@ export const generateInterviewPdf = async (
     const width = textWidth + paddingX * 2;
     ensureSpace(height + spacing.small);
 
+    let badgeX = margin.x;
+    if (isRTL) {
+      badgeX = margin.x - width;
+    }
+
     if (type === "success") {
       doc.setFillColor(color.successBg.r, color.successBg.g, color.successBg.b);
       doc.setTextColor(
@@ -244,8 +292,8 @@ export const generateInterviewPdf = async (
       doc.setFillColor(color.warnBg.r, color.warnBg.g, color.warnBg.b);
       doc.setTextColor(color.warnText.r, color.warnText.g, color.warnText.b);
     }
-    doc.roundedRect(margin.x, y - 14, width, height, 6, 6, "F");
-    doc.text(text, margin.x + paddingX, y - 14 + height / 2 + 3);
+    doc.roundedRect(badgeX, y - 14, width, height, 6, 6, "F");
+    doc.text(text, badgeX + paddingX, y - 14 + height / 2 + 3);
     doc.setTextColor(color.text);
     y += height + spacing.small;
   };
@@ -257,7 +305,14 @@ export const generateInterviewPdf = async (
     const lines = doc.splitTextToSize(text || "-", maxWidth);
     lines.forEach((ln: string) => {
       ensureSpace(spacing.row);
-      doc.text(ln, margin.x, y);
+
+      if (isRTL) {
+        const textWidth = doc.getTextWidth(ln);
+        doc.text(ln, margin.x - textWidth, y);
+      } else {
+        doc.text(ln, margin.x, y);
+      }
+
       y += 14;
     });
     y += spacing.small;
@@ -269,62 +324,109 @@ export const generateInterviewPdf = async (
     const h = 22;
     const chipGapX = 8;
     const chipGapY = 10;
-    let x = margin.x;
+
+    let x = isRTL ? margin.x : margin.x;
     ensureSpace(h + chipGapY);
+
     items.forEach((txt) => {
       const w = doc.getTextWidth(txt) + padX * 2;
-      if (x + w > margin.x + contentWidth) {
-        x = margin.x;
-        y += h + chipGapY;
-        ensureSpace(h + chipGapY);
+
+      if (isRTL) {
+        if (x - w < margin.x - contentWidth) {
+          x = margin.x;
+          y += h + chipGapY;
+          ensureSpace(h + chipGapY);
+        }
+        doc.setFillColor(color.chipBg.r, color.chipBg.g, color.chipBg.b);
+        doc.setDrawColor(230);
+        doc.setLineWidth(0.8);
+        doc.roundedRect(x - w, y - 14, w, h, 10, 10, "FD");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.setTextColor(color.chipText);
+        doc.text(txt, x - w + padX, y + 2);
+        x -= w + chipGapX;
+      } else {
+        if (x + w > margin.x + contentWidth) {
+          x = margin.x;
+          y += h + chipGapY;
+          ensureSpace(h + chipGapY);
+        }
+        doc.setFillColor(color.chipBg.r, color.chipBg.g, color.chipBg.b);
+        doc.setDrawColor(230);
+        doc.setLineWidth(0.8);
+        doc.roundedRect(x, y - 14, w, h, 10, 10, "FD");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.setTextColor(color.chipText);
+        doc.text(txt, x + padX, y + 2);
+        x += w + chipGapX;
       }
-      doc.setFillColor(color.chipBg.r, color.chipBg.g, color.chipBg.b);
-      doc.setDrawColor(230);
-      doc.setLineWidth(0.8);
-      doc.roundedRect(x, y - 14, w, h, 10, 10, "FD");
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(10);
-      doc.setTextColor(color.chipText);
-      doc.text(txt, x + padX, y + 2);
-      x += w + chipGapX;
     });
     y += h + chipGapY;
     doc.setTextColor(color.text);
   };
 
   // Header
-  heading(`Interview Report – ${interview?.candidate_name ?? "Candidate"}`);
-  subtext(`Generated on ${dayjs().format("MMM D, YYYY h:mm A")}`);
+  const reportTitle = isRTL
+    ? `تقرير المقابلة – ${interview?.candidate_name ?? "المرشح"}`
+    : `Interview Report – ${interview?.candidate_name ?? "Candidate"}`;
+  heading(reportTitle);
+
+  const generatedText = isRTL
+    ? `تم إنشاؤه في ${dayjs().format("MMM D, YYYY h:mm A")}`
+    : `Generated on ${dayjs().format("MMM D, YYYY h:mm A")}`;
+  subtext(generatedText);
 
   // Meta section
-  sectionTitle("Overview");
-  const isConducted = interview?.is_conducted;
+  const overviewTitle = isRTL ? "نظرة عامة" : "Overview";
+  sectionTitle(overviewTitle);
+
+  const isConducted = Boolean(interview?.is_conducted);
   const overviewRows = [
-    { label: "Candidate", value: interview?.candidate_name ?? "-" },
     {
-      label: "Created",
+      label: isRTL ? "المرشح" : "Candidate",
+      value: interview?.candidate_name ?? (isRTL ? "-" : "-"),
+    },
+    {
+      label: isRTL ? "تاريخ الإنشاء" : "Created",
       value: interview?.created_at
         ? dayjs(interview.created_at).format("MMM D, YYYY h:mm A")
+        : isRTL
+        ? "غير متوفر"
         : "N/A",
     },
-    { label: "Language", value: interview?.language || "English" },
+    {
+      label: isRTL ? "اللغة" : "Language",
+      value:
+        interview?.language === "ar"
+          ? isRTL
+            ? "العربية"
+            : "Arabic"
+          : interview?.language || (isRTL ? "الإنجليزية" : "English"),
+    },
   ];
   labelValueRows(overviewRows, 2);
+
+  const completedText = isRTL ? "مكتمل" : "Completed";
+  const notConductedText = isRTL ? "لم يتم إجراؤها" : "Not Conducted";
   badge(
-    isConducted ? "Completed" : "Not Conducted",
+    isConducted ? completedText : notConductedText,
     isConducted ? "success" : "warn"
   );
 
   // Skills section
   const skills = dedupeSkills(interview?.skills);
   if (skills.length > 0) {
-    sectionTitle("Skills & Technologies");
+    const skillsTitle = isRTL ? "المهارات والتقنيات" : "Skills & Technologies";
+    sectionTitle(skillsTitle);
     chips(skills);
   }
 
   // Feedback
   if (options?.includeFeedback !== false && interview?.feedback) {
-    sectionTitle("Feedback");
+    const feedbackTitle = isRTL ? "التقييم" : "Feedback";
+    sectionTitle(feedbackTitle);
     const entries = Object.entries(
       interview.feedback as Record<string, unknown>
     );
@@ -333,7 +435,14 @@ export const generateInterviewPdf = async (
       doc.setFont("helvetica", "bold");
       doc.setFontSize(12);
       ensureSpace(spacing.row + spacing.feedbackGap);
-      doc.text(t, margin.x, y);
+
+      if (isRTL) {
+        const textWidth = doc.getTextWidth(t);
+        doc.text(t, margin.x - textWidth, y);
+      } else {
+        doc.text(t, margin.x, y);
+      }
+
       y += spacing.feedbackGap + 6;
       paragraph(String(value ?? ""));
     });
@@ -346,16 +455,28 @@ export const generateInterviewPdf = async (
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.setTextColor(color.subtle);
-    const footer = `Page ${i} of ${pageCount}`;
-    doc.text(
-      footer,
-      page.width - margin.x - doc.getTextWidth(footer),
-      page.height - spacing.footer
-    );
+    const footer = isRTL
+      ? `الصفحة ${i} من ${pageCount}`
+      : `Page ${i} of ${pageCount}`;
+
+    if (isRTL) {
+      const footerWidth = doc.getTextWidth(footer);
+      doc.text(footer, margin.x - footerWidth, page.height - spacing.footer);
+    } else {
+      doc.text(
+        footer,
+        page.width - margin.x - doc.getTextWidth(footer),
+        page.height - spacing.footer
+      );
+    }
   }
 
-  const filename = `${options?.filenamePrefix ?? "Interview"}_Report_${(
-    interview?.candidate_name ?? "Candidate"
+  const defaultPrefix = isRTL ? "مقابلة" : "Interview";
+  const reportText = isRTL ? "تقرير" : "Report";
+  const filename = `${
+    options?.filenamePrefix ?? defaultPrefix
+  }_${reportText}_${(
+    interview?.candidate_name ?? (isRTL ? "المرشح" : "Candidate")
   )
     .replace(/\s+/g, "_")
     .replace(/__+/g, "_")}.pdf`;
