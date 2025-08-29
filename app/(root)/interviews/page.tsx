@@ -108,10 +108,10 @@ export default function InterviewsPage() {
               return (
                 <div
                   key={it.id}
-                  className="bg-zinc-900 rounded-xl p-5 border border-zinc-700 flex flex-col gap-3"
+                  className="bg-zinc-900 rounded-xl p-4 sm:p-5 border border-zinc-700 flex flex-col gap-2 sm:gap-3"
                 >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex items-center justify-between gap-2 sm:gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                       <Image
                         src="/covers/logo.svg"
                         alt="cover"
@@ -132,7 +132,7 @@ export default function InterviewsPage() {
                       </div>
                     </div>
                     <span
-                      className={`text-xs font-semibold px-2 py-1 rounded ${
+                      className={`text-xs font-semibold px-2 py-1 rounded whitespace-nowrap max-sm:text-[10px] max-sm:px-1.5 max-sm:py-0.5 ${
                         isConducted
                           ? "text-green-300 bg-green-900/30"
                           : "text-yellow-300 bg-yellow-900/30"
@@ -150,7 +150,7 @@ export default function InterviewsPage() {
                     </p>
                   )}
 
-                  <div className="flex gap-3 mt-2">
+                  <div className="flex gap-2 sm:gap-3 mt-2">
                     {isConducted ? (
                       <>
                         <Button
