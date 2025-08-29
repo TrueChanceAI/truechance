@@ -290,36 +290,36 @@ export const translations: Record<string, Translations> = {
         title: "About Us",
         subtitle: "Transforming job interviews with AI technology",
         description:
-          "Our mission is to empower job seekers and hiring managers with advanced AI technology, enabling them to connect, communicate, and collaborate effectively.",
+          "At True Chance, we believe the future of hiring is not defined by a résumé that gets a few seconds of attention, but by a deeper understanding of each individual's skills, personality, and potential. Our platform transforms the way talents connect with opportunities, using AI-powered interviews to ensure every candidate has a fair chance to stand out.",
         leadingPlatform: "Leading AI Platform",
       },
 
       mission: {
         title: "Our Mission",
         content:
-          "To revolutionize the recruitment industry by providing AI-powered tools that enhance the interview process, making it more accessible, efficient, and effective for all stakeholders.",
+          "Our mission is to redefine the job-seeking journey by replacing static résumés with dynamic, AI-driven interviews that reflect the true capabilities of each candidate and connect them to the most suitable opportunities—free from bias.",
       },
       vision: {
         title: "Our Vision",
         content:
-          "To become the leading platform for AI-powered interviews, empowering millions of users worldwide to achieve their career goals through seamless, unbiased, and highly personalized interview experiences.",
+          "To become the leading global platform for uncovering talent and matching it with the right opportunities, creating a fair, innovative, and future-ready hiring ecosystem where individuals are valued for their true potential.",
       },
       values: {
         title: "Our Values",
         innovation: {
           title: "Innovation",
           description:
-            "We are constantly pushing the boundaries of AI technology to deliver the most accurate and reliable interview results.",
+            "Redefining recruitment standards with creative and cutting-edge solutions.",
         },
         accessibility: {
           title: "Accessibility",
           description:
-            "We believe in making our platform available to everyone, regardless of their background or location.",
+            "Making opportunities reachable for every talent without barriers.",
         },
         excellence: {
           title: "Excellence",
           description:
-            "We strive for perfection in every aspect of our platform, from the quality of our AI models to the user experience.",
+            "Setting the highest benchmarks in evaluation, fairness, and quality.",
         },
       },
       features: {
@@ -327,17 +327,17 @@ export const translations: Record<string, Translations> = {
         voiceInterviews: {
           title: "Voice Interviews",
           description:
-            "Experience a natural, conversational interview format that captures the nuances of human communication.",
+            "Engage in real, interactive conversations that showcase who you truly are.",
         },
         personalizedQuestions: {
-          title: "Personalized Questions",
+          title: "Adaptive Questions",
           description:
-            "Get interview questions tailored to your specific skills, experience, and career goals.",
+            "Smart questions tailored live during the interview to uncover your unique strengths.",
         },
         analysis: {
           title: "Comprehensive Analysis",
           description:
-            "Receive detailed feedback on your interview performance, strengths, and areas for improvement.",
+            "AI creates a detailed, unbiased profile and directly matches you with the best-fit opportunities.",
         },
       },
 
@@ -504,36 +504,35 @@ export const translations: Record<string, Translations> = {
         title: "من نحن",
         subtitle: "تحويل المقابلات الوظيفية بتقنية الذكاء الاصطناعي",
         description:
-          "مهمتنا هي تمكين المتقدمين للوظائف والمستخدمين في التوظيف بتقنية الذكاء الصناعي المتقدمة، مما يسمح لهم بالاتصال والتواصل والتعاون بكفاءة.",
+          "في ترو تشانس (True Chance) نؤمن أن مستقبل التوظيف لا يُقاس بسيرة ذاتية تُقرأ في ثوانٍ، بل بفهم عميق لمهارات وقدرات كل فرد. نحن منصة مبتكرة تربط الموهبة بالفرصة الحقيقية من خلال مقابلات شخصية مدعومة بالذكاء الصناعي، لنمنح كل مرشح فرصة عادلة لإبراز نفسه.",
         leadingPlatform: "منصة الذكاء الاصطناعي الرائدة",
       },
 
       mission: {
         title: "مهمتنا",
         content:
-          "لتحويل صناعة التوظيف بتقنية الذكاء الصناعي، من خلال تقديم أدوات مدعومة بتقنية الذكاء الصناعي تحسن عملية المقابلة، مما يجعلها أكثر доступية وفعالية وفعالية لجميع الأطراف المعنية.",
+          "مهمتنا هي إعادة تعريف رحلة البحث عن عمل عبر تحويل البداية من مجرد ورقة إلى تجربة حقيقية تعكس إمكانيات الفرد، وتمكنه من الوصول إلى الفرص الأنسب دون تحيز.",
       },
       vision: {
         title: "رؤيتنا",
         content:
-          "لتصبح أفضل منصة للمقابلات الوظيفية بتقنية الذكاء الصناعي، تمكن ملايين المستخدمين في العالم الكلي من تحقيق أهدافهم عبر تجربة مستمرة، محايدة ومخصصة بشكل كبير للمقابلات الوظيفية.",
+          "أن نكون المنصة الرائدة عالميًا في إبراز المواهب وربطها بفرصها المثالية، لنصنع بيئة توظيف أكثر عدلاً وابتكارًا، حيث تُقاس الكفاءات بقدراتها الفعلية لا بمظهر سيرتها الذاتية.",
       },
       values: {
         title: "قيمنا",
         innovation: {
           title: "الابتكار",
-          description:
-            "نحن دائماً ندفع حدود تقنية الذكاء الصناعي لتقديم أدق وأكثر موثوقية نتائج المقابلات.",
+          description: "تقديم حلول غير تقليدية تعيد تعريف معايير التوظيف.",
         },
         accessibility: {
           title: "الوصول",
           description:
-            "نحن نؤمن بتوفير منصتنا للجميع، بغض النظر عن ظروفهم أو موقعهم.",
+            "فتح الأبواب أمام كل موهبة لتصل إلى فرصها المناسبة دون عوائق.",
         },
         excellence: {
-          title: "الاستثناء",
+          title: "التميز",
           description:
-            "نحن نسعى لتحقيق التميز في كل جانب من جوانب منصتنا، من جودة نماذج الذكاء الصناعي إلى تجربة المستخدم.",
+            "رفع معايير الترشيح والتقييم لتحقيق أعلى مستويات الجودة والعدالة.",
         },
       },
       features: {
@@ -541,17 +540,17 @@ export const translations: Record<string, Translations> = {
         voiceInterviews: {
           title: "المقابلات الصوتية",
           description:
-            "استضاف خبرة مقابلة منطقية، تمكنك من التواصل الطبيعي والتفاعل مع السياق.",
+            "تجربة تفاعلية حقيقية تعكس شخصيتك وطريقة تفكيرك بشكل مباشر.",
         },
         personalizedQuestions: {
           title: "أسئلة مخصصة",
           description:
-            "احصل على أسئلة المقابلة المخصصة لمهاراتك وخبرتك وأهداف حياتك.",
+            "تُبنى وتتكيف أثناء المقابلة لتكشف أعمق تفاصيل مهاراتك وتجاربك.",
         },
         analysis: {
           title: "التحليل الشامل",
           description:
-            "احصل على توصيات مفصلة حول أدائك في المقابلة، والقوى، والمناطق التي يمكن تحسينها.",
+            "الذكاء الصناعي يقدم صورة دقيقة وموضوعية عنك، ثم يرشحك للوظائف الأنسب بناءً على هذه الرؤية.",
         },
       },
 
