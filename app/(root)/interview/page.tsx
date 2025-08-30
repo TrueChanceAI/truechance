@@ -36,8 +36,6 @@ function InterviewProtectedRoute({ children }: { children: React.ReactNode }) {
   // Redirect if missing required parameters
   useEffect(() => {
     if (!interviewId || !paymentId) {
-      console.log(interviewId, paymentId);
-      console.log("redirecting to upload resume");
       router.push("/upload-resume");
       return;
     }
@@ -95,10 +93,211 @@ function InterviewProtectedRoute({ children }: { children: React.ReactNode }) {
 
   // Check if user and interview exist
   if (!user || !interview) {
-    return null;
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+        <div className="bg-zinc-900 rounded-2xl p-6 sm:p-8 flex flex-col items-center gap-4 min-w-[280px] sm:min-w-[320px] relative shadow-xl mx-4 border border-zinc-700">
+          <div className="w-16 h-16 bg-red-900/20 rounded-full flex items-center justify-center border-2 border-red-500">
+            <svg
+              className="w-8 h-8 text-red-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"
+              />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-white text-center">
+            {!user ? "Authentication Required" : "Interview Not Found"}
+          </h2>
+          <p className="text-sm text-gray-300 text-center">
+            {!user
+              ? "Please log in to access this interview."
+              : "The requested interview could not be found or loaded."}
+          </p>
+          <button
+            onClick={() => router.push("/upload-resume")}
+            className="px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+          >
+            Go to Upload Resume
+          </button>
+        </div>
+      </div>
+    );
   }
 
-  // Check if access has been validated
+  // Check payment status FIRST - before access validation
+  if (interview.payment_status !== "completed") {
+    const getPaymentStatusInfo = (status: string) => {
+      if (status === "pending") {
+        return {
+          title: "Payment Processing",
+          icon: (
+            <svg
+              className="w-8 h-8 text-yellow-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          ),
+          bgColor: "bg-yellow-900/20",
+          borderColor: "border-yellow-500",
+          buttonColor: "bg-yellow-500 hover:bg-yellow-600",
+          message:
+            "Your payment is still being processed. Please wait for confirmation.",
+          status: "processing",
+        };
+      } else if (status === "failed") {
+        return {
+          title: "Payment Failed",
+          icon: (
+            <svg
+              className="w-8 h-8 text-red-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"
+              />
+            </svg>
+          ),
+          bgColor: "bg-red-900/20",
+          borderColor: "border-red-500",
+          buttonColor: "bg-red-500 hover:bg-red-600",
+          message:
+            "Your payment has failed. Please try again or contact support.",
+          status: "failed",
+        };
+      } else {
+        return {
+          title: "Payment Required",
+          icon: (
+            <svg
+              className="w-8 h-8 text-red-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          ),
+          bgColor: "bg-red-900/20",
+          borderColor: "border-red-500",
+          buttonColor: "bg-red-500 hover:bg-red-600",
+          message: "Payment is required to access this interview.",
+          status: "required",
+        };
+      }
+    };
+
+    const paymentInfo = getPaymentStatusInfo(interview.payment_status);
+
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+        <div className="bg-zinc-900 rounded-2xl p-6 sm:p-8 flex flex-col items-center gap-4 min-w-[280px] sm:min-w-[320px] relative shadow-xl mx-4 border border-zinc-700">
+          <div
+            className={`w-16 h-16 ${paymentInfo.bgColor} rounded-full flex items-center justify-center border-2 ${paymentInfo.borderColor}`}
+          >
+            {paymentInfo.icon}
+          </div>
+
+          <h2 className="text-xl font-bold text-white text-center">
+            {paymentInfo.title}
+          </h2>
+
+          <div className="text-center space-y-2">
+            <p className="text-sm text-gray-300">{paymentInfo.message}</p>
+
+            {/* Show payment status details */}
+            <div
+              className={`${paymentInfo.bgColor} border border-${
+                paymentInfo.borderColor.split("-")[1]
+              }-500/30 rounded-lg p-3`}
+            >
+              <div className="text-center space-y-1">
+                <p
+                  className={`text-xs ${
+                    paymentInfo.status === "processing"
+                      ? "text-yellow-300"
+                      : paymentInfo.status === "failed"
+                      ? "text-red-300"
+                      : "text-red-300"
+                  } font-medium`}
+                >
+                  {paymentInfo.status === "processing"
+                    ? "⏳ Payment Status"
+                    : paymentInfo.status === "failed"
+                    ? "❌ Payment Failed"
+                    : "❌ Payment Status"}
+                </p>
+                <p
+                  className={`text-xs ${
+                    paymentInfo.status === "processing"
+                      ? "text-yellow-400"
+                      : paymentInfo.status === "failed"
+                      ? "text-red-400"
+                      : "text-red-400"
+                  }`}
+                >
+                  {interview.payment_status?.toUpperCase()}
+                </p>
+                {paymentInfo.status === "failed" && (
+                  <div className="space-y-1">
+                    <p className="text-xs text-red-400">
+                      Please check your payment method and try again
+                    </p>
+                    <p className="text-xs text-red-400">
+                      Common issues: insufficient funds, expired card, or bank
+                      restrictions
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-2 flex-wrap justify-center">
+            {paymentInfo.status === "failed" && (
+              <button
+                onClick={() => router.push("/payment-failed")}
+                className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+              >
+                View Payment Details
+              </button>
+            )}
+            <button
+              onClick={() => router.push("/upload-resume")}
+              className={`px-6 py-2 ${paymentInfo.buttonColor} text-white rounded-lg transition-colors`}
+            >
+              Go to Upload Resume
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if access has been validated (only for completed payments)
   if (!accessValidated) {
     if (validationError) {
       // Determine status type and styling based on validation error
@@ -293,121 +492,6 @@ function InterviewProtectedRoute({ children }: { children: React.ReactNode }) {
           <button
             onClick={() => router.push("/upload-resume")}
             className="px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
-          >
-            Go to Upload Resume
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // Check payment status
-  if (interview.payment_status !== "completed") {
-    const getPaymentStatusInfo = (status: string) => {
-      if (status === "pending") {
-        return {
-          title: "Payment Processing",
-          icon: (
-            <svg
-              className="w-8 h-8 text-yellow-500"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-          ),
-          bgColor: "bg-yellow-900/20",
-          borderColor: "border-yellow-500",
-          buttonColor: "bg-yellow-500 hover:bg-yellow-600",
-          message:
-            "Your payment is still being processed. Please wait for confirmation.",
-          status: "processing",
-        };
-      } else {
-        return {
-          title: "Payment Required",
-          icon: (
-            <svg
-              className="w-8 h-8 text-red-500"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-          ),
-          bgColor: "bg-red-900/20",
-          borderColor: "border-red-500",
-          buttonColor: "bg-red-500 hover:bg-red-600",
-          message: "Payment is required to access this interview.",
-          status: "required",
-        };
-      }
-    };
-
-    const paymentInfo = getPaymentStatusInfo(interview.payment_status);
-
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-        <div className="bg-zinc-900 rounded-2xl p-6 sm:p-8 flex flex-col items-center gap-4 min-w-[280px] sm:min-w-[320px] relative shadow-xl mx-4 border border-zinc-700">
-          <div
-            className={`w-16 h-16 ${paymentInfo.bgColor} rounded-full flex items-center justify-center border-2 ${paymentInfo.borderColor}`}
-          >
-            {paymentInfo.icon}
-          </div>
-
-          <h2 className="text-xl font-bold text-white text-center">
-            {paymentInfo.title}
-          </h2>
-
-          <div className="text-center space-y-2">
-            <p className="text-sm text-gray-300">{paymentInfo.message}</p>
-
-            {/* Show payment status details */}
-            <div
-              className={`${paymentInfo.bgColor} border border-${
-                paymentInfo.borderColor.split("-")[1]
-              }-500/30 rounded-lg p-3`}
-            >
-              <div className="text-center space-y-1">
-                <p
-                  className={`text-xs ${
-                    paymentInfo.status === "processing"
-                      ? "text-yellow-300"
-                      : "text-red-300"
-                  } font-medium`}
-                >
-                  {paymentInfo.status === "processing"
-                    ? "⏳ Payment Status"
-                    : "❌ Payment Status"}
-                </p>
-                <p
-                  className={`text-xs ${
-                    paymentInfo.status === "processing"
-                      ? "text-yellow-400"
-                      : "text-red-400"
-                  }`}
-                >
-                  {interview.payment_status?.toUpperCase()}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <button
-            onClick={() => router.push("/upload-resume")}
-            className={`px-6 py-2 ${paymentInfo.buttonColor} text-white rounded-lg transition-colors`}
           >
             Go to Upload Resume
           </button>

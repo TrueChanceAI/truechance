@@ -104,24 +104,42 @@ export async function sendInterviewReportEmail(
   };
 
   const formatSkills = (skills: string) => {
-    if (!skills) return "None specified";
+    const none = isRTL ? "غير محدد" : "None specified";
+    if (!skills) return none;
 
     const skillArray = skills
       .split(",")
       .map((s) => s.trim())
       .filter(Boolean);
-    if (skillArray.length === 0) return "None specified";
+    if (!skillArray.length) return none;
 
-    return skillArray
-      .map((skill) => {
-        const isLongSkill = skill.length > 25;
-        const maxWidth = isLongSkill ? "none" : "180px";
-        const whiteSpace = isLongSkill ? "normal" : "nowrap";
-        const height = isLongSkill ? "auto" : "36px";
+    return (
+      skillArray
+        .map((skill) => {
+          // allow breaks after common separators (/, _, -)
+          const safe = skill.replace(/([/_-])/g, "$1&#8203;");
 
-        return `<span style="display: inline-block; background: #f3f4f6; color: #374151; padding: 8px 16px; margin: 2px; border-radius: 20px; font-size: 13px; font-weight: 500; border: 1px solid #e5e7eb; text-align: center; max-width: ${maxWidth}; overflow: hidden; text-overflow: ellipsis; white-space: ${whiteSpace}; line-height: 1.2; height: ${height}; min-height: 36px; box-sizing: border-box; word-wrap: break-word;">${skill}</span>`;
-      })
-      .join("");
+          return `<span style="
+          display:inline-block;
+          background:#f3f4f6;
+          color:#374151;
+          padding:6px 12px;
+          margin:4px 4px 0 0;
+          border-radius:16px;
+          font-size:12px;
+          font-weight:500;
+          border:1px solid #e5e7eb;
+          line-height:1.3;
+          white-space:normal;
+          max-width:100%;
+          overflow-wrap:break-word;
+          word-break:break-word;
+          vertical-align:top;
+        ">${safe}</span>`;
+        })
+        // include a space to ensure some clients see a break opportunity between pills
+        .join(" ")
+    );
   };
 
   const html = `
@@ -224,16 +242,9 @@ export async function sendInterviewReportEmail(
           font-size: 12px; 
           font-weight: 500;
         }
-        .skills-container { 
-          display: flex; 
-          flex-wrap: wrap; 
-          gap: 8px; 
-          margin-top: 16px;
+        .skills-container {
           max-width: 100%;
-          overflow-wrap: break-word;
-          word-wrap: break-word;
-          align-items: flex-start;
-          justify-content: flex-start;
+          margin-top: 16px;
         }
         .feedback-table { 
           width: 100%; 
@@ -319,9 +330,10 @@ export async function sendInterviewReportEmail(
             <h2 class="section-title">🛠️ ${
               isRTL ? "المهارات والتقنيات" : "Skills & Technologies"
             }</h2>
-            <div class="skills-container">
-              ${formatSkills(interview.skills)}
-            </div>
+            <div class="skills-container"
+     style="display:block; max-width:100%; margin-top:16px;">
+  ${formatSkills(interview.skills)}
+</div>
           </div>
           
           <div class="section">

@@ -257,19 +257,8 @@ export const useUpdateInterviewConducted = () => {
 };
 
 export const useValidateInterviewAccess = () => {
-  const onError = (error: IAPIError) => {
-    toast.error(
-      (error?.response as any)?.data?.error ||
-        (error?.response as any)?.message ||
-        (error?.response as any)?.data?.message ||
-        error?.message ||
-        "Failed to validate interview access"
-    );
-  };
-
   const { mutateAsync, isPending, isSuccess, isError, error } = useMutation({
     mutationFn: validateInterviewAccess,
-    onError,
   });
 
   return {
