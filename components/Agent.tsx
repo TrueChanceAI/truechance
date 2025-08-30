@@ -89,6 +89,8 @@ const Agent = ({
   const timeLimitRef = useRef<NodeJS.Timeout | null>(null);
   const retryCountRef = useRef<number>(0);
   const maxRetries = 3;
+  // New state for session tracking
+  const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
 
   // API hooks
   const { analyzeTone } = useAnalyzeTone();
@@ -101,6 +103,7 @@ const Agent = ({
       console.log("📞 Call started - Setting up 1-minute timer...");
       setCallStatus(CallStatus.ACTIVE);
       setInterviewStartTime(Date.now());
+      setSessionStartTime(Date.now()); // Track session start time
 
       // Start the timer when the call begins
       timeLimitRef.current = setTimeout(() => {
@@ -127,6 +130,18 @@ const Agent = ({
       if (timeLimitRef.current) {
         clearTimeout(timeLimitRef.current);
         timeLimitRef.current = null;
+      }
+
+      // Track session end time for duration calculation
+      if (sessionStartTime) {
+        const sessionEndTime = Date.now();
+        const sessionDurationMinutes =
+          (sessionEndTime - sessionStartTime) / (1000 * 60);
+        console.log(
+          `📊 Session ended. Duration: ${sessionDurationMinutes.toFixed(
+            2
+          )} minutes`
+        );
       }
     };
 
@@ -399,21 +414,84 @@ const Agent = ({
     setLoadingFeedback(false);
   }
 
-  // Calculate interview duration
+  // Calculate interview duration with improved logic
   let interviewDuration = null;
+
+  const calculateDuration = (startTime: number, endTime: number) => {
+    const diff = dayjs(endTime).diff(dayjs(startTime), "minute");
+    const seconds = dayjs(endTime).diff(dayjs(startTime), "second") % 60;
+
+    if (diff >= 0 && seconds >= 0) {
+      return `${diff}m ${seconds}s`;
+    }
+    return null;
+  };
+
   if (interviewStartTime) {
     let endTime = null;
+
+    // Try to get end time from the last message timestamp
     if (messages.length > 0 && messages[messages.length - 1].timestamp) {
       endTime = dayjs(messages[messages.length - 1].timestamp).valueOf();
-    } else if (feedback?.createdAt) {
+    }
+    // Fallback to feedback creation time
+    else if (feedback?.createdAt) {
       endTime = dayjs(feedback.createdAt).valueOf();
-    } else {
+    }
+    // Fallback to current time
+    else {
       endTime = Date.now();
     }
-    const diff = dayjs(endTime).diff(dayjs(interviewStartTime), "minute");
-    const seconds =
-      dayjs(endTime).diff(dayjs(interviewStartTime), "second") % 60;
-    interviewDuration = `${diff}m ${seconds}s`;
+
+    interviewDuration = calculateDuration(interviewStartTime, endTime);
+
+    // If calculation fails, use session duration as fallback
+    if (!interviewDuration && sessionStartTime) {
+      const sessionEndTime = Date.now();
+      const sessionDurationMinutes =
+        (sessionEndTime - sessionStartTime) / (1000 * 60);
+      if (sessionDurationMinutes > 0) {
+        const sessionDiff = Math.floor(sessionDurationMinutes);
+        const sessionSeconds = Math.floor(
+          (sessionDurationMinutes - sessionDiff) * 60
+        );
+        interviewDuration = `${sessionDiff}m ${sessionSeconds}s`;
+      }
+    }
+  } else {
+    // If no interview start time, try to calculate from session start time
+    if (sessionStartTime) {
+      const sessionEndTime = Date.now();
+      const sessionDurationMinutes =
+        (sessionEndTime - sessionStartTime) / (1000 * 60);
+      if (sessionDurationMinutes > 0) {
+        const sessionDiff = Math.floor(sessionDurationMinutes);
+        const sessionSeconds = Math.floor(
+          (sessionDurationMinutes - sessionDiff) * 60
+        );
+        interviewDuration = `${sessionDiff}m ${sessionSeconds}s`;
+      }
+    }
+  }
+
+  // Final fallback: if we still don't have duration, try to estimate from messages
+  if (!interviewDuration && messages.length > 0) {
+    const firstMessage = messages[0];
+    const lastMessage = messages[messages.length - 1];
+
+    if (firstMessage.timestamp && lastMessage.timestamp) {
+      const startTime = dayjs(firstMessage.timestamp).valueOf();
+      const endTime = dayjs(lastMessage.timestamp).valueOf();
+      interviewDuration = calculateDuration(startTime, endTime);
+    }
+  }
+
+  // If we still don't have duration, try to estimate from total time spent
+  if (!interviewDuration && interviewId) {
+    // This will be calculated and updated in the database when saveToSupabase is called
+    console.log(
+      "⚠️ Duration not calculated, will use session time as fallback"
+    );
   }
 
   // Detect language from prop or sessionStorage (default to 'en')
@@ -549,6 +627,25 @@ const Agent = ({
         }
       }
 
+      // Calculate session duration and update cumulative time
+      let sessionDurationMinutes = 0;
+      let cumulativeTimeUpdate = {};
+
+      if (sessionStartTime) {
+        const sessionEndTime = Date.now();
+        sessionDurationMinutes =
+          (sessionEndTime - sessionStartTime) / (1000 * 60);
+        console.log(
+          `📊 Session duration: ${sessionDurationMinutes.toFixed(2)} minutes`
+        );
+
+        // Update cumulative time tracking
+        cumulativeTimeUpdate = {
+          last_session_end: new Date().toISOString(),
+          total_time_spent_minutes: sessionDurationMinutes, // This will be added to existing total
+        };
+      }
+
       // Prepare data for Supabase
       const interviewData = {
         transcript: transcriptText,
@@ -560,6 +657,7 @@ const Agent = ({
         interviewId,
       };
 
+      // Update interview with transcript, feedback, duration, tone, and session tracking
       await updateInterview({
         id: interviewData.interviewId as string,
         payload: {
@@ -567,6 +665,7 @@ const Agent = ({
           feedback: interviewData.feedback,
           duration: interviewData.duration,
           tone: interviewData.tone as any,
+          ...cumulativeTimeUpdate,
         },
       });
       console.log("✅ Interview data saved to Supabase successfully");

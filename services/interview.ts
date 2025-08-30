@@ -72,3 +72,8 @@ export const updateInterviewConducted: TUpdateInterviewConductedService =
 
     return data;
   };
+
+export const validateInterviewAccess = async (interviewId: string) => {
+  const { data } = await clientApi.post("/interview-access", { interviewId });
+  return data;
+};

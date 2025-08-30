@@ -17,6 +17,12 @@ export interface Interview {
   payment_id: string | null;
   interview_questions: string[];
   payment_status: string;
+  // New fields for security measures
+  total_time_spent_minutes?: number; // Cumulative time spent across all sessions
+  last_session_start?: string; // Timestamp of last session start
+  last_session_end?: string; // Timestamp of last session end
+  session_count?: number; // Number of sessions attempted
+  max_allowed_minutes?: number; // Maximum allowed time (default 45 minutes)
 }
 
 export interface ICreateInterviewRequest {

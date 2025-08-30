@@ -8,7 +8,6 @@ import { useParams } from "next/navigation";
 import { useGetInterviewById } from "@/hooks/interview";
 import { Button } from "@/components/ui/button";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { generateInterviewPdf } from "@/lib/utils";
 
 const Feedback = () => {
   const params = useParams();
@@ -79,20 +78,6 @@ const Feedback = () => {
   const feedback = interview.feedback;
   const feedbackEntries = Object.entries(feedback);
 
-  const handleGenerateReport = async () => {
-    try {
-      await generateInterviewPdf(interview, {
-        includeFeedback: true,
-        filenamePrefix: t("Interview_Feedback", "تقييم_المقابلة"),
-      });
-    } catch (err) {
-      console.error(
-        t("Failed to generate feedback PDF", "فشل في إنشاء ملف PDF للتقييم"),
-        err
-      );
-    }
-  };
-
   return (
     <ProtectedRoute>
       <section className="section-feedback px-4 sm:px-0" dir={dir}>
@@ -101,9 +86,6 @@ const Feedback = () => {
             {t("Interview Feedback", "تقييم المقابلة")}
           </h1>
           <div className="flex gap-3">
-            <Button className="btn-secondary" onClick={handleGenerateReport}>
-              {t("Generate Report", "إنشاء تقرير")}
-            </Button>
             <Button className="btn-outline">
               <Link href={`/interview/${id}`}>
                 {t("View Details", "عرض التفاصيل")}

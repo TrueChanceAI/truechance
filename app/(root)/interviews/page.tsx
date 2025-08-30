@@ -128,6 +128,15 @@ export default function InterviewsPage() {
                           {it.created_at
                             ? dayjs(it.created_at).format("MMM D, YYYY h:mm A")
                             : t("N/A", "غير متوفر")}
+                          {it.total_time_spent_minutes && (
+                            <span className="ml-2">
+                              • {t("Time spent", "الوقت المستغرق")}:{" "}
+                              {Math.round(it.total_time_spent_minutes)}m
+                              {it.max_allowed_minutes && (
+                                <span> / {it.max_allowed_minutes}m</span>
+                              )}
+                            </span>
+                          )}
                         </p>
                       </div>
                     </div>

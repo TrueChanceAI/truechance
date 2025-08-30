@@ -9,6 +9,7 @@ import {
   generateInterviewFeedback,
   updateInterview,
   updateInterviewConducted,
+  validateInterviewAccess,
 } from "@/services/interview";
 import { toast } from "sonner";
 import { IAPIError } from "@/types/api";
@@ -22,6 +23,7 @@ import {
   IUpdateInterviewConductedResponse,
 } from "@/types/interview";
 import { queryRetry } from "@/lib/api/client";
+import { useState, useCallback, useEffect } from "react";
 
 export const useGetAllInterviews = () => {
   const { data, error, isError, isPending, isSuccess } = useQuery({
@@ -251,5 +253,98 @@ export const useUpdateInterviewConducted = () => {
     isError,
     isLoading: isPending,
     isSuccess,
+  };
+};
+
+export const useValidateInterviewAccess = () => {
+  const onError = (error: IAPIError) => {
+    toast.error(
+      (error?.response as any)?.data?.error ||
+        (error?.response as any)?.message ||
+        (error?.response as any)?.data?.message ||
+        error?.message ||
+        "Failed to validate interview access"
+    );
+  };
+
+  const { mutateAsync, isPending, isSuccess, isError, error } = useMutation({
+    mutationFn: validateInterviewAccess,
+    onError,
+  });
+
+  return {
+    validateInterviewAccess: mutateAsync,
+    error,
+    isError,
+    isLoading: isPending,
+    isSuccess,
+  };
+};
+
+export const useInterviewAccessValidation = (interviewId: string | null) => {
+  const [accessValidated, setAccessValidated] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [hasAttemptedValidation, setHasAttemptedValidation] = useState(false);
+
+  const { validateInterviewAccess, isLoading: isValidatingAccess } =
+    useValidateInterviewAccess();
+
+  const validateAccess = useCallback(async () => {
+    if (!interviewId || hasAttemptedValidation) return;
+
+    try {
+      setHasAttemptedValidation(true);
+      const result = await validateInterviewAccess(interviewId);
+
+      if (result.canAccess) {
+        setAccessValidated(true);
+        setValidationError(null);
+      } else {
+        // Handle access denied based on reason
+        if (result.reason === "session_expired") {
+          setValidationError(
+            `Session expired. You can only restart within 10 minutes of starting. Time since start: ${result.timeSinceStart} minutes.`
+          );
+        } else if (result.reason === "time_limit_reached") {
+          setValidationError(
+            `Maximum interview time (${result.maxAllowedMinutes} minutes) reached. You cannot start another session. Total time spent: ${result.totalTimeSpent} minutes.`
+          );
+        } else {
+          setValidationError(result.error || "Access denied");
+        }
+      }
+    } catch (error) {
+      console.error("Error validating interview access:", error);
+      setValidationError(
+        "Failed to validate interview access. Please try again."
+      );
+    }
+  }, [interviewId, hasAttemptedValidation, validateInterviewAccess]);
+
+  const resetValidation = useCallback(() => {
+    setAccessValidated(false);
+    setValidationError(null);
+    setHasAttemptedValidation(false);
+  }, []);
+
+  const retryValidation = useCallback(() => {
+    setValidationError(null);
+    setAccessValidated(false);
+    setHasAttemptedValidation(false);
+  }, []);
+
+  // Reset validation when interviewId changes
+  useEffect(() => {
+    resetValidation();
+  }, [interviewId, resetValidation]);
+
+  return {
+    accessValidated,
+    validationError,
+    isValidatingAccess,
+    hasAttemptedValidation,
+    validateAccess,
+    retryValidation,
+    resetValidation,
   };
 };

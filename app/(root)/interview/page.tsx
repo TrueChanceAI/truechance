@@ -5,7 +5,10 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { useSearchParams } from "next/navigation";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
-import { useGetInterviewById } from "@/hooks/interview";
+import {
+  useGetInterviewById,
+  useInterviewAccessValidation,
+} from "@/hooks/interview";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
@@ -22,6 +25,14 @@ function InterviewProtectedRoute({ children }: { children: React.ReactNode }) {
     isError: isErrorInterview,
   } = useGetInterviewById(interviewId as string);
 
+  const {
+    accessValidated,
+    validationError,
+    isValidatingAccess,
+    validateAccess,
+    retryValidation,
+  } = useInterviewAccessValidation(interviewId);
+
   // Redirect if missing required parameters
   useEffect(() => {
     if (!interviewId || !paymentId) {
@@ -32,7 +43,27 @@ function InterviewProtectedRoute({ children }: { children: React.ReactNode }) {
     }
   }, [interviewId, paymentId, router]);
 
-  if (isLoadingInterview) {
+  // Validate interview access when interview data is loaded
+  useEffect(() => {
+    if (
+      interview &&
+      interviewId &&
+      !accessValidated &&
+      !isValidatingAccess &&
+      !interview.is_conducted &&
+      interview.payment_status === "completed"
+    ) {
+      validateAccess();
+    }
+  }, [
+    interview,
+    interviewId,
+    accessValidated,
+    isValidatingAccess,
+    validateAccess,
+  ]);
+
+  if (isLoadingInterview || isValidatingAccess) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
         <div className="bg-zinc-900 rounded-2xl p-6 sm:p-8 flex flex-col items-center gap-4 min-w-[280px] sm:min-w-[320px] relative shadow-xl mx-4">
@@ -53,7 +84,9 @@ function InterviewProtectedRoute({ children }: { children: React.ReactNode }) {
             />
           </svg>
           <span className="text-base sm:text-lg font-medium text-white text-center">
-            Loading interview...
+            {isValidatingAccess
+              ? "Validating interview access..."
+              : "Loading interview..."}
           </span>
         </div>
       </div>
@@ -65,12 +98,156 @@ function InterviewProtectedRoute({ children }: { children: React.ReactNode }) {
     return null;
   }
 
+  // Check if access has been validated
+  if (!accessValidated) {
+    if (validationError) {
+      // Determine status type and styling based on validation error
+      const getStatusInfo = (error: string) => {
+        if (error.includes("Session expired")) {
+          return {
+            title: "Session Expired",
+            icon: (
+              <svg
+                className="w-8 h-8 text-orange-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            ),
+            bgColor: "bg-orange-900/20",
+            borderColor: "border-orange-500",
+            primaryButtonColor: "bg-orange-500 hover:bg-orange-600",
+            status: "expired",
+          };
+        } else if (error.includes("Maximum interview time")) {
+          return {
+            title: "Time Limit Reached",
+            icon: (
+              <svg
+                className="w-8 h-8 text-red-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"
+                />
+              </svg>
+            ),
+            bgColor: "bg-red-900/20",
+            borderColor: "border-red-500",
+            primaryButtonColor: "bg-red-500 hover:bg-red-600",
+            status: "time_limit",
+          };
+        } else {
+          return {
+            title: "Access Denied",
+            icon: (
+              <svg
+                className="w-8 h-8 text-red-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                />
+              </svg>
+            ),
+            bgColor: "bg-red-900/20",
+            borderColor: "border-red-500",
+            primaryButtonColor: "bg-red-500 hover:bg-red-600",
+            status: "denied",
+          };
+        }
+      };
+
+      const statusInfo = getStatusInfo(validationError);
+
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-zinc-900 rounded-2xl p-6 sm:p-8 flex flex-col items-center gap-4 min-w-[280px] sm:min-w-[320px] relative shadow-xl mx-4 border border-zinc-700">
+            <div
+              className={`w-16 h-16 ${statusInfo.bgColor} rounded-full flex items-center justify-center border-2 ${statusInfo.borderColor}`}
+            >
+              {statusInfo.icon}
+            </div>
+
+            <h2 className="text-xl font-bold text-white text-center">
+              {statusInfo.title}
+            </h2>
+
+            <div className="text-center space-y-2">
+              <p className="text-sm text-gray-300">{validationError}</p>
+
+              {/* Show additional status information */}
+              {statusInfo.status === "expired" && (
+                <div className="bg-orange-900/20 border border-orange-500/30 rounded-lg p-3">
+                  <p className="text-xs text-orange-300">
+                    ⏰ Session timeout: 10 minutes
+                  </p>
+                </div>
+              )}
+
+              {statusInfo.status === "time_limit" && (
+                <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-3">
+                  <p className="text-xs text-red-300">
+                    ⏱️ Maximum allowed time reached
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-2 flex-wrap justify-center">
+              {statusInfo.status === "expired" && (
+                <button
+                  onClick={retryValidation}
+                  className={`px-6 py-2 ${statusInfo.primaryButtonColor} text-white rounded-lg transition-colors`}
+                >
+                  Try Again
+                </button>
+              )}
+
+              <button
+                onClick={() => router.push("/interviews")}
+                className="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors"
+              >
+                Back to Interviews
+              </button>
+
+              <button
+                onClick={() => router.push("/upload-resume")}
+                className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+              >
+                New Interview
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  }
+
   // Check if payment IDs match
   if (interview.payment_id && paymentId !== interview.payment_id) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-        <div className="bg-zinc-900 rounded-2xl p-6 sm:p-8 flex flex-col items-center gap-4 min-w-[280px] sm:min-w-[320px] relative shadow-xl mx-4">
-          <div className="w-16 h-16 bg-red-900/20 rounded-full flex items-center justify-center">
+        <div className="bg-zinc-900 rounded-2xl p-6 sm:p-8 flex flex-col items-center gap-4 min-w-[280px] sm:min-w-[320px] relative shadow-xl mx-4 border border-zinc-700">
+          <div className="w-16 h-16 bg-red-900/20 rounded-full flex items-center justify-center border-2 border-red-500">
             <svg
               className="w-8 h-8 text-red-500"
               fill="none"
@@ -82,20 +259,40 @@ function InterviewProtectedRoute({ children }: { children: React.ReactNode }) {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
               />
             </svg>
           </div>
+
           <h2 className="text-xl font-bold text-white text-center">
             Payment Mismatch
           </h2>
-          <p className="text-sm text-gray-300 text-center">
-            The payment ID doesn't match this interview. Please use the correct
-            payment link.
-          </p>
+
+          <div className="text-center space-y-2">
+            <p className="text-sm text-gray-300">
+              The payment ID doesn't match this interview. Please use the
+              correct payment link.
+            </p>
+
+            {/* Show payment mismatch details */}
+            <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-3">
+              <div className="text-center space-y-1">
+                <p className="text-xs text-red-300 font-medium">
+                  🔒 Security Check Failed
+                </p>
+                <p className="text-xs text-red-400">
+                  Payment ID: {paymentId?.substring(0, 8)}...
+                </p>
+                <p className="text-xs text-red-400">
+                  Interview ID: {interview.id?.substring(0, 8)}...
+                </p>
+              </div>
+            </div>
+          </div>
+
           <button
             onClick={() => router.push("/upload-resume")}
-            className="mt-2 px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+            className="px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
           >
             Go to Upload Resume
           </button>
@@ -106,16 +303,16 @@ function InterviewProtectedRoute({ children }: { children: React.ReactNode }) {
 
   // Check payment status
   if (interview.payment_status !== "completed") {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-        <div className="bg-zinc-900 rounded-2xl p-6 sm:p-8 flex flex-col items-center gap-4 min-w-[280px] sm:min-w-[320px] relative shadow-xl mx-4">
-          <div className="w-16 h-16 bg-yellow-900/20 rounded-full flex items-center justify-center">
+    const getPaymentStatusInfo = (status: string) => {
+      if (status === "pending") {
+        return {
+          title: "Payment Processing",
+          icon: (
             <svg
               className="w-8 h-8 text-yellow-500"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
             >
               <path
                 strokeLinecap="round"
@@ -124,18 +321,93 @@ function InterviewProtectedRoute({ children }: { children: React.ReactNode }) {
                 d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
+          ),
+          bgColor: "bg-yellow-900/20",
+          borderColor: "border-yellow-500",
+          buttonColor: "bg-yellow-500 hover:bg-yellow-600",
+          message:
+            "Your payment is still being processed. Please wait for confirmation.",
+          status: "processing",
+        };
+      } else {
+        return {
+          title: "Payment Required",
+          icon: (
+            <svg
+              className="w-8 h-8 text-red-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          ),
+          bgColor: "bg-red-900/20",
+          borderColor: "border-red-500",
+          buttonColor: "bg-red-500 hover:bg-red-600",
+          message: "Payment is required to access this interview.",
+          status: "required",
+        };
+      }
+    };
+
+    const paymentInfo = getPaymentStatusInfo(interview.payment_status);
+
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+        <div className="bg-zinc-900 rounded-2xl p-6 sm:p-8 flex flex-col items-center gap-4 min-w-[280px] sm:min-w-[320px] relative shadow-xl mx-4 border border-zinc-700">
+          <div
+            className={`w-16 h-16 ${paymentInfo.bgColor} rounded-full flex items-center justify-center border-2 ${paymentInfo.borderColor}`}
+          >
+            {paymentInfo.icon}
           </div>
+
           <h2 className="text-xl font-bold text-white text-center">
-            Payment Required
+            {paymentInfo.title}
           </h2>
-          <p className="text-sm text-gray-300 text-center">
-            {interview.payment_status === "pending"
-              ? "Your payment is still being processed. Please wait for confirmation."
-              : "Payment is required to access this interview."}
-          </p>
+
+          <div className="text-center space-y-2">
+            <p className="text-sm text-gray-300">{paymentInfo.message}</p>
+
+            {/* Show payment status details */}
+            <div
+              className={`${paymentInfo.bgColor} border border-${
+                paymentInfo.borderColor.split("-")[1]
+              }-500/30 rounded-lg p-3`}
+            >
+              <div className="text-center space-y-1">
+                <p
+                  className={`text-xs ${
+                    paymentInfo.status === "processing"
+                      ? "text-yellow-300"
+                      : "text-red-300"
+                  } font-medium`}
+                >
+                  {paymentInfo.status === "processing"
+                    ? "⏳ Payment Status"
+                    : "❌ Payment Status"}
+                </p>
+                <p
+                  className={`text-xs ${
+                    paymentInfo.status === "processing"
+                      ? "text-yellow-400"
+                      : "text-red-400"
+                  }`}
+                >
+                  {interview.payment_status?.toUpperCase()}
+                </p>
+              </div>
+            </div>
+          </div>
+
           <button
             onClick={() => router.push("/upload-resume")}
-            className="mt-2 px-6 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors"
+            className={`px-6 py-2 ${paymentInfo.buttonColor} text-white rounded-lg transition-colors`}
           >
             Go to Upload Resume
           </button>
@@ -149,10 +421,10 @@ function InterviewProtectedRoute({ children }: { children: React.ReactNode }) {
   if (isConducted) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-        <div className="bg-zinc-900 rounded-2xl p-6 sm:p-8 flex flex-col items-center gap-4 min-w-[280px] sm:min-w-[320px] relative shadow-xl mx-4">
-          <div className="w-16 h-16 bg-blue-900/20 rounded-full flex items-center justify-center">
+        <div className="bg-zinc-900 rounded-2xl p-6 sm:p-8 flex flex-col items-center gap-4 min-w-[280px] sm:min-w-[320px] relative shadow-xl mx-4 border border-zinc-700">
+          <div className="w-16 h-16 bg-green-900/20 rounded-full flex items-center justify-center border-2 border-green-500">
             <svg
-              className="w-8 h-8 text-blue-500"
+              className="w-8 h-8 text-green-500"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -173,12 +445,102 @@ function InterviewProtectedRoute({ children }: { children: React.ReactNode }) {
             This interview has already been conducted. You can view your results
             and feedback.
           </p>
+
+          {/* Show completion details */}
+          <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-3 w-full">
+            <div className="text-center space-y-1">
+              <p className="text-xs text-green-300 font-medium">
+                ✓ Interview Status
+              </p>
+              <p className="text-xs text-green-400">
+                Completed on{" "}
+                {new Date(interview.created_at).toLocaleDateString()}
+              </p>
+              {interview.total_time_spent_minutes && (
+                <p className="text-xs text-green-400">
+                  Total time: {Math.round(interview.total_time_spent_minutes)}{" "}
+                  minutes
+                </p>
+              )}
+            </div>
+          </div>
+
           <div className="flex gap-2">
             <button
               onClick={() => router.push(`/interview/${interview.id}/feedback`)}
-              className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+              className="px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
             >
               View Feedback
+            </button>
+            <button
+              onClick={() => router.push("/upload-resume")}
+              className="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors"
+            >
+              New Interview
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if interview has started but not completed
+  if (
+    interview.transcript &&
+    interview.transcript !== "Interview not started" &&
+    !isConducted
+  ) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+        <div className="bg-zinc-900 rounded-2xl p-6 sm:p-8 flex flex-col items-center gap-4 min-w-[280px] sm:min-w-[320px] relative shadow-xl mx-4 border border-zinc-700">
+          <div className="w-16 h-16 bg-yellow-900/20 rounded-full flex items-center justify-center border-2 border-yellow-500">
+            <svg
+              className="w-8 h-8 text-yellow-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-white text-center">
+            Interview In Progress
+          </h2>
+          <p className="text-sm text-gray-300 text-center">
+            This interview has been started but not completed. You can continue
+            from where you left off.
+          </p>
+
+          {/* Show progress details */}
+          <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-3 w-full">
+            <div className="text-center space-y-1">
+              <p className="text-xs text-yellow-300 font-medium">
+                ⏳ Interview Status
+              </p>
+              <p className="text-xs text-yellow-400">
+                Started on {new Date(interview.created_at).toLocaleDateString()}
+              </p>
+              {interview.total_time_spent_minutes && (
+                <p className="text-xs text-yellow-400">
+                  Time spent: {Math.round(interview.total_time_spent_minutes)}{" "}
+                  minutes
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              onClick={() => router.push(`/interview/${interview.id}`)}
+              className="px-6 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors"
+            >
+              Continue Interview
             </button>
             <button
               onClick={() => router.push("/upload-resume")}
@@ -395,7 +757,14 @@ function InterviewPageContent() {
         <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
           <span>Candidate: {interview.candidate_name}</span>
           <span>Language: {interview.language?.toUpperCase()}</span>
-          <span>Duration: {interview.duration || "N/A"}</span>
+          <span>
+            Duration:{" "}
+            {interview.duration && interview.duration !== "N/A"
+              ? interview.duration
+              : interview.total_time_spent_minutes
+              ? `${Math.round(interview.total_time_spent_minutes)}m`
+              : "Not started"}
+          </span>
         </div>
       </div>
 

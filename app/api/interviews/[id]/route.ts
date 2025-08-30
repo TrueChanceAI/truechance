@@ -157,7 +157,14 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
     const body = await req.json();
-    const { transcript, feedback, duration, tone } = body;
+    const {
+      transcript,
+      feedback,
+      duration,
+      tone,
+      last_session_end,
+      total_time_spent_minutes,
+    } = body;
 
     const authResult = await requireAuth(req);
     if (!authResult.user) {
@@ -194,14 +201,32 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
       );
     }
 
+    // Calculate cumulative time if session data is provided
+    let updateData: any = {
+      transcript,
+      feedback,
+      duration,
+      tone,
+    };
+
+    if (last_session_end && total_time_spent_minutes !== undefined) {
+      const currentTotalTime = interview.total_time_spent_minutes || 0;
+      const newTotalTime = currentTotalTime + total_time_spent_minutes;
+
+      updateData = {
+        ...updateData,
+        last_session_end,
+        total_time_spent_minutes: newTotalTime,
+      };
+
+      console.log(
+        `📊 Updating cumulative time: ${currentTotalTime} + ${total_time_spent_minutes} = ${newTotalTime} minutes`
+      );
+    }
+
     const { error } = await supabaseServer
       .from("interviews")
-      .update({
-        transcript,
-        feedback,
-        duration,
-        tone,
-      })
+      .update(updateData)
       .eq("id", id);
 
     if (error) {
