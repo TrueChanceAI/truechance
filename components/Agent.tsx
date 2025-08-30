@@ -377,6 +377,9 @@ const Agent = ({
       .join("\n")
       .slice(0, MAX_CHARS);
 
+    console.log("🔄 Starting feedback generation...");
+    const startTime = Date.now();
+
     try {
       const data: any = await generateInterviewFeedback({
         transcript: transcriptText,
@@ -391,12 +394,30 @@ const Agent = ({
         }
       }
       setFeedback(feedbackData);
+      console.log(
+        "✅ AI feedback generated successfully:",
+        Object.keys(feedbackData)
+      );
 
-      // Update interview conducted state to true
+      // Save feedback to Supabase FIRST
+      console.log("💾 Saving feedback to Supabase...");
+      const saveStartTime = Date.now();
+      await saveToSupabase(messages, feedbackData, toneResult);
+      console.log(
+        `✅ Feedback saved to Supabase in ${Date.now() - saveStartTime}ms`
+      );
+
+      // Update interview conducted state AFTER feedback is saved
       if (interviewId) {
         try {
+          console.log("🔄 Updating interview conducted state...");
+          const updateStartTime = Date.now();
           await updateInterviewConducted(interviewId);
-          console.log("✅ Interview conducted state updated to true");
+          console.log(
+            `✅ Interview conducted state updated in ${
+              Date.now() - updateStartTime
+            }ms`
+          );
 
           // Email report will be sent automatically by the API endpoint
           console.log("📧 Interview report email will be sent automatically");
@@ -404,13 +425,35 @@ const Agent = ({
           console.error("Error updating interview conducted state:", error);
         }
       }
-
-      await saveToSupabase(messages, feedbackData, toneResult);
-    } catch {
+    } catch (error) {
+      console.error("❌ Error generating feedback:", error);
       const feedbackData = { raw: "Could not generate feedback." };
       setFeedback(feedbackData);
+
+      console.log("💾 Saving fallback feedback to Supabase...");
       await saveToSupabase(messages, feedbackData, toneResult);
+
+      // Update interview conducted state even if feedback generation fails
+      if (interviewId) {
+        try {
+          console.log(
+            "🔄 Updating interview conducted state (with fallback feedback)..."
+          );
+          await updateInterviewConducted(interviewId);
+          console.log(
+            "✅ Interview conducted state updated to true (with fallback feedback)"
+          );
+          console.log("📧 Interview report email will be sent automatically");
+        } catch (error) {
+          console.error("Error updating interview conducted state:", error);
+        }
+      }
     }
+
+    const totalTime = Date.now() - startTime;
+    console.log(
+      `🎯 Total feedback generation process completed in ${totalTime}ms`
+    );
     setLoadingFeedback(false);
   }
 

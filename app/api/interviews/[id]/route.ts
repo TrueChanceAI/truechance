@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase-server";
 import { requireAuth, createUnauthorizedResponse } from "@/lib/auth-middleware";
-import { sendInterviewFeedbackReport } from "@/lib/mail";
+import { sendInterviewReportEmail } from "@/lib/mail";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -323,16 +323,70 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
         .single();
 
       if (!userError && user?.email) {
-        // Fetch the updated interview data for the email
-        const { data: updatedInterview } = await supabaseServer
-          .from("interviews")
-          .select("*")
-          .eq("id", id)
-          .single();
+        // Wait for feedback to be available with retry mechanism
+        let updatedInterview: any;
+        const maxRetries = 10;
+        let retryCount = 0;
+
+        while (!updatedInterview && retryCount < maxRetries) {
+          const { data: interview, error: fetchError } = await supabaseServer
+            .from("interviews")
+            .select("*")
+            .eq("id", id)
+            .single();
+
+          if (!fetchError && interview) {
+            console.log(
+              `🔄 Retry ${retryCount + 1}: Checking for feedback data...`
+            );
+            console.log(
+              `📊 Interview feedback keys:`,
+              Object.keys(interview.feedback || {})
+            );
+
+            // Check if feedback is available and has meaningful content
+            if (
+              interview.feedback &&
+              Object.keys(interview.feedback).length > 0 &&
+              interview.feedback.raw !== "Could not generate feedback."
+            ) {
+              updatedInterview = interview;
+              console.log("✅ Feedback data found and is valid");
+              break;
+            } else {
+              console.log("⏳ Feedback not ready yet, waiting...");
+              // Wait before retrying
+              await new Promise((resolve) => setTimeout(resolve, 1000));
+              retryCount++;
+            }
+          } else {
+            console.log(
+              `❌ Error fetching interview data on retry ${retryCount + 1}:`,
+              fetchError
+            );
+            retryCount++;
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+          }
+        }
 
         if (updatedInterview) {
-          await sendInterviewFeedbackReport(updatedInterview, user.email);
+          await sendInterviewReportEmail(user.email, updatedInterview);
           console.log("✅ Interview report email sent successfully");
+        } else {
+          // Fallback: send email with current data even if feedback isn't ready
+          console.log(
+            "⚠️ Feedback not available after retries, sending email with current data"
+          );
+          const { data: fallbackInterview } = await supabaseServer
+            .from("interviews")
+            .select("*")
+            .eq("id", id)
+            .single();
+
+          if (fallbackInterview) {
+            await sendInterviewReportEmail(user.email, fallbackInterview);
+            console.log("✅ Interview report email sent with fallback data");
+          }
         }
       }
     } catch (emailError) {

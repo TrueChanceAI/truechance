@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useGetPaymentStatus } from "@/hooks/payment";
+import { useGetInterviewById } from "@/hooks/interview";
 
 interface PaymentSuccessModalProps {
   paymentId: string;
@@ -22,6 +23,9 @@ const PaymentSuccessModal: React.FC<PaymentSuccessModalProps> = ({
   const [isStarting, setIsStarting] = useState(false);
   const searchParams = useSearchParams();
   const interviewId = searchParams.get("interviewId");
+
+  // Fetch interview data to get duration
+  const { interview } = useGetInterviewById(interviewId as string);
 
   const handleStartInterview = async () => {
     console.log("Start Interview button clicked!", { interviewId, paymentId });
@@ -126,6 +130,60 @@ const PaymentSuccessModal: React.FC<PaymentSuccessModalProps> = ({
             is ready to begin.
           </p>
         </div>
+
+        {/* Interview Duration and Note */}
+        {interview && (
+          <div className="w-full bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 border border-gray-200 dark:border-gray-600">
+            <div className="text-center space-y-3">
+              {/* Interview Duration */}
+              <div className="flex items-center justify-center space-x-2">
+                <svg
+                  className="w-5 h-5 text-blue-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Interview Duration:{" "}
+                  <span className="text-blue-600 dark:text-blue-400 font-semibold">
+                    {interview.duration && interview.duration !== "N/A"
+                      ? interview.duration
+                      : "45 minutes"}
+                  </span>
+                </span>
+              </div>
+
+              {/* Note about when interview can start */}
+              <div className="flex items-center justify-center space-x-2">
+                <svg
+                  className="w-5 h-5 text-green-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  Interview can start anytime
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Start Interview Button */}
         <div

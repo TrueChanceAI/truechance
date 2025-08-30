@@ -1,89 +1,73 @@
 import nodemailer from "nodemailer";
 
 const smtpHost = process.env.SMTP_HOST;
-const smtpPort = process.env.SMTP_PORT
-  ? parseInt(process.env.SMTP_PORT, 10)
-  : 587;
-const mailSender = process.env.MAIL_SENDER;
 const smtpPass = process.env.SMTP_PASS;
+const mailSender = process.env.MAIL_SENDER;
 
 let transporter: nodemailer.Transporter | null = null;
 
 function getTransporter(): nodemailer.Transporter {
-  if (transporter) return transporter;
   if (!smtpHost || !mailSender || !smtpPass) {
-    throw new Error(
-      "SMTP configuration missing. Please set SMTP_HOST, SMTP_USER, SMTP_PASS."
-    );
+    throw new Error("SMTP configuration is missing");
   }
-  transporter = nodemailer.createTransport({
-    host: smtpHost,
-    port: smtpPort,
-    secure: smtpPort === 465,
-    auth: {
-      user: mailSender,
-      pass: smtpPass,
-    },
-  });
+
+  if (!transporter) {
+    transporter = nodemailer.createTransport({
+      host: smtpHost,
+      port: 587,
+      secure: false,
+      auth: {
+        user: mailSender,
+        pass: smtpPass,
+      },
+    });
+  }
+
   return transporter;
 }
 
 export async function sendEmail(params: {
   to: string;
   subject: string;
-  html?: string;
-  text?: string;
+  html: string;
+  text: string;
 }): Promise<void> {
   const tx = getTransporter();
   await tx.sendMail({
     from: mailSender,
-    to: params.to,
-    subject: params.subject,
-    text: params.text,
-    html: params.html,
+    ...params,
   });
 }
 
 export async function sendOtpEmail(to: string, otp: string): Promise<void> {
-  const subject = "Your TrueChance verification code";
+  const subject = "Verify your email";
   const html = `
-    <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-      <h2>Verify your email</h2>
-      <p>Your verification code is:</p>
-      <p style="font-size: 24px; font-weight: bold; letter-spacing: 4px;">${otp}</p>
-      <p>This code will expire soon. If you didn't request this, please ignore this email.</p>
-    </div>
+    <h2>Verify your email</h2>
+    <p>Your verification code is: <strong>${otp}</strong></p>
+    <p>This code will expire soon. If you didn't request this, please ignore this email.</p>
   `;
-  const text = `Your verification code is: ${otp}`;
+  const text = `Your verification code is: ${otp}. This code will expire soon.`;
+
   await sendEmail({ to, subject, html, text });
 }
 
-export async function sendInterviewFeedbackReport(
-  interview: any,
-  userEmail: string
+export async function sendInterviewReportEmail(
+  userEmail: string,
+  interview: any
 ): Promise<void> {
-  const subject = `🎉 Interview Report - ${interview.candidate_name}`;
-
-  // Detect language and set RTL support
   const isRTL = interview?.language === "ar";
   const dir = isRTL ? "rtl" : "ltr";
   const textAlign = isRTL ? "right" : "left";
   const fontFamily = isRTL
-    ? "'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
-    : "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
+    ? '"Cairo", "Host Grotesk", "Inter", "Poppins", "Roboto Mono", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif'
+    : 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif';
+
+  const subject = isRTL
+    ? `تقرير المقابلة - ${interview.candidate_name}`
+    : `Interview Report - ${interview.candidate_name}`;
 
   const formatDate = (dateString: string) => {
-    if (isRTL) {
-      // Arabic date format
-      return new Date(dateString).toLocaleDateString("ar-SA", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    }
-    return new Date(dateString).toLocaleDateString("en-US", {
+    return new Date(dateString).toLocaleDateString(isRTL ? "ar-SA" : "en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
@@ -129,10 +113,14 @@ export async function sendInterviewFeedbackReport(
     if (skillArray.length === 0) return "None specified";
 
     return skillArray
-      .map(
-        (skill) =>
-          `<span style="display: inline-block; background: #f3f4f6; color: #374151; padding: 6px 14px; margin: 3px; border-radius: 25px; font-size: 14px; font-weight: 500; border: 1px solid #e5e7eb; text-align: center;">${skill}</span>`
-      )
+      .map((skill) => {
+        const isLongSkill = skill.length > 25;
+        const maxWidth = isLongSkill ? "none" : "180px";
+        const whiteSpace = isLongSkill ? "normal" : "nowrap";
+        const height = isLongSkill ? "auto" : "36px";
+
+        return `<span style="display: inline-block; background: #f3f4f6; color: #374151; padding: 8px 16px; margin: 2px; border-radius: 20px; font-size: 13px; font-weight: 500; border: 1px solid #e5e7eb; text-align: center; max-width: ${maxWidth}; overflow: hidden; text-overflow: ellipsis; white-space: ${whiteSpace}; line-height: 1.2; height: ${height}; min-height: 36px; box-sizing: border-box; word-wrap: break-word;">${skill}</span>`;
+      })
       .join("");
   };
 
@@ -199,52 +187,58 @@ export async function sendInterviewFeedbackReport(
           content: '';
           position: absolute;
           bottom: -3px;
-          ${isRTL ? "right: 0;" : "left: 0;"}
+          left: ${isRTL ? "auto" : "0"};
+          right: ${isRTL ? "0" : "auto"};
           width: 60px;
           height: 3px;
           background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
         .info-grid { 
-          display: table; 
-          width: 100%; 
-          border-collapse: collapse; 
+          display: grid; 
+          grid-template-columns: 1fr; 
+          gap: 16px; 
+          margin-bottom: 24px;
         }
         .info-row { 
-          display: table-row; 
+          display: flex; 
+          justify-content: space-between; 
+          align-items: center; 
+          padding: 12px 0; 
+          border-bottom: 1px solid #f3f4f6;
         }
         .info-label { 
-          display: table-cell; 
-          padding: 12px 0; 
           font-weight: 600; 
-          color: #374151; 
-          width: 130px; 
-          vertical-align: top;
-          text-align: ${textAlign};
+          color: #6b7280; 
+          font-size: 14px;
         }
         .info-value { 
-          display: table-cell; 
-          padding: 12px 0; 
-          color: #6b7280; 
-          vertical-align: top;
-          text-align: ${textAlign};
+          font-weight: 500; 
+          color: #1f2937; 
+          font-size: 14px;
         }
         .status-badge { 
-          display: inline-block; 
-          background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+          background: #10b981; 
           color: white; 
-          padding: 8px 18px; 
-          border-radius: 25px; 
-          font-size: 14px; 
-          font-weight: 600; 
-          box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+          padding: 4px 12px; 
+          border-radius: 20px; 
+          font-size: 12px; 
+          font-weight: 500;
         }
         .skills-container { 
-          margin-top: 16px; 
-          text-align: ${textAlign};
+          display: flex; 
+          flex-wrap: wrap; 
+          gap: 8px; 
+          margin-top: 16px;
+          max-width: 100%;
+          overflow-wrap: break-word;
+          word-wrap: break-word;
+          align-items: flex-start;
+          justify-content: flex-start;
         }
         .feedback-table { 
           width: 100%; 
           border-collapse: collapse; 
+          margin-top: 16px;
         }
         .footer { 
           background: #f9fafb; 
@@ -356,6 +350,22 @@ export async function sendInterviewFeedbackReport(
                 : "This report was automatically generated after your interview completion.<br>For any questions, please contact our support team."
             }
           </p>
+          <!-- Website Link -->
+          <div style="margin: 25px 0 0 0; padding: 15px; background: #f3f4f6; border-radius: 8px; border: 1px solid #e5e7eb;">
+            <p style="margin: 0 0 10px 0; font-size: 14px; font-weight: 600; color: #374151;">
+              ${isRTL ? "🔗 الوصول إلى الموقع" : "🔗 Access Your Account"}
+            </p>
+            <p style="margin: 0 0 15px 0; font-size: 13px; color: #6b7280;">
+              ${
+                isRTL
+                  ? "إذا أغلقت التبويب، يمكنك الوصول إلى حسابك وتقارير المقابلات من خلال الموقع:"
+                  : "You can access your account and interview reports through our website:"
+              }
+            </p>
+            <a href="https://www.true-chance.com" style="display: inline-block; background: #667eea; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: 500; font-size: 14px;">
+              ${isRTL ? "فتح TrueChance" : "Open TrueChance"}
+            </a>
+          </div>
         </div>
       </div>
     </body>
@@ -405,6 +415,12 @@ ${
 }
 
 ${isRTL ? "شكراً لاستخدام TrueChance!" : "Thank you for using TrueChance!"}
+
+${
+  isRTL
+    ? "🔗 الوصول إلى الموقع: إذا أغلقت التبويب، يمكنك الوصول إلى حسابك من خلال: https://www.true-chance.com"
+    : "🔗 Access Your Account: If you closed the tab, you can access your account at: https://www.true-chance.com"
+}
   `;
 
   await sendEmail({
