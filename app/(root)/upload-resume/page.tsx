@@ -5,7 +5,6 @@ import { useEffect } from "react";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import PaymentForm from "@/components/PaymentForm";
 import PaymentSuccessModal from "@/components/PaymentSuccessModal";
-import { useCreateInterview } from "@/hooks/interview";
 import UploadResumeForm from "@/components/UploadResumeForm";
 
 function UploadResumeContent() {
