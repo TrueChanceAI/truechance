@@ -335,7 +335,7 @@ export default function AboutPage() {
                     />
                   </svg>
                   <span className="text-zinc-300 text-lg">
-                    aalghamdi810@gmail.com
+                    truechanceksa@gmail.com
                   </span>
                 </div>
               </div>
@@ -356,7 +356,7 @@ export default function AboutPage() {
             </p>
 
             <a
-              href="mailto:aalghamdi810@gmail.com?subject=Contact from TrueChance About Page"
+              href="mailto:truechanceksa@gmail.com?subject=Contact from TrueChance About Page"
               className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-medium rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200 cursor-pointer"
             >
               <svg
