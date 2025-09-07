@@ -94,10 +94,10 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
         {/* Pricing Display */}
         <div className="mt-4 flex items-center justify-center gap-3">
           <span className="text-2xl font-bold text-gray-900 dark:text-white">
-            $49
+            SAR 49
           </span>
           <span className="text-sm text-gray-500 dark:text-gray-400 line-through">
-            $99
+            SAR 99
           </span>
           <span className="bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200 text-xs font-medium px-2 py-1 rounded-full">
             50% OFF
@@ -262,7 +262,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
                     Processing...
                   </div>
                 ) : (
-                  "Unlock Interview - $49"
+                  "Unlock Interview - SAR 49"
                 )}
               </button>
 
