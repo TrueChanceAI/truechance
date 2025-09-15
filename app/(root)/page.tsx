@@ -104,7 +104,11 @@ function HomeContent() {
       {/* Meet the Founder Section */}
       <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 sm:mt-20">
         <div className="bg-gradient-to-br from-slate-900/20 to-slate-800/20 backdrop-blur-xl rounded-3xl p-6 sm:p-8 border border-slate-700/20 shadow-xl">
-          <div className="text-center mb-6">
+          <div
+            className={`${
+              currentLang === "ar" ? "text-right" : "text-center"
+            } mb-6`}
+          >
             {/* <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20 text-purple-300 text-sm font-medium mb-6">
               <div className="w-2 h-2 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full mr-3"></div>
               {t("founder.hero.subtitle")}
@@ -114,12 +118,22 @@ function HomeContent() {
               {t("founder.hero.title")}
             </h2>
 
-            <div className="w-16 h-1 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full mx-auto"></div>
+            <div
+              className={`w-16 h-1 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full ${
+                currentLang === "ar" ? "ml-auto" : "mx-auto"
+              }`}
+            ></div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 items-start content-start">
             {/* Stats & Experience */}
-            <div className="space-y-6 text-center lg:text-left lg:order-2">
+            <div
+              className={`space-y-6 ${
+                currentLang === "ar"
+                  ? "text-center lg:text-right"
+                  : "text-center lg:text-left"
+              } lg:order-2`}
+            >
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                 <div className="flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/10 to-blue-600/10 border border-blue-500/15 h-24 px-4 overflow-hidden">
                   <div className="text-2xl sm:text-3xl font-bold text-blue-400 leading-none whitespace-nowrap">
@@ -150,7 +164,13 @@ function HomeContent() {
 
             {/* Compact Founder Profile & CTA (no photo) */}
             <div className="space-y-4 lg:order-1">
-              <div className="text-center lg:text-left">
+              <div
+                className={`${
+                  currentLang === "ar"
+                    ? "text-center lg:text-right"
+                    : "text-center lg:text-left"
+                }`}
+              >
                 <p className="text-xs uppercase tracking-wide text-zinc-400 mb-1">
                   {currentLang === "ar" ? "المؤسس" : "Founder"}
                 </p>
@@ -182,7 +202,13 @@ function HomeContent() {
             </div>
           </div>
           {/* Content below with Read Full Story */}
-          <div className="mt-6 pt-6 border-t border-slate-700/30 text-center lg:text-left space-y-3">
+          <div
+            className={`mt-6 pt-6 border-t border-slate-700/30 ${
+              currentLang === "ar"
+                ? "text-center lg:text-right"
+                : "text-center lg:text-left"
+            } space-y-3`}
+          >
             <h3 className="text-xl font-semibold text-emerald-400">
               {t("founder.about.title")}
             </h3>
