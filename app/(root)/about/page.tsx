@@ -3,6 +3,7 @@
 import React from "react";
 import { useLanguage } from "@/hooks/useLanguage";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function AboutPage() {
   const { t, currentLang } = useLanguage();
@@ -288,7 +289,7 @@ export default function AboutPage() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
+              <Link
                 href="/founder"
                 className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-medium rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200 cursor-pointer"
               >
@@ -306,7 +307,7 @@ export default function AboutPage() {
                   />
                 </svg>
                 {t("navigation.founder")}
-              </a>
+              </Link>
 
               <a
                 href="mailto:truechanceksa@gmail.com?subject=Contact from TrueChance About Page"

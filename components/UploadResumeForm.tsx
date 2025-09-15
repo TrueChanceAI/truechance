@@ -8,6 +8,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import React, { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 
 interface IProps {
   onInterviewCreated: (interviewId: string) => void;
@@ -378,27 +379,27 @@ const UploadResumeForm = ({ onInterviewCreated }: IProps) => {
               {currentLang === "ar" ? (
                 <>
                   أوافق على{" "}
-                  <a
+                  <Link
                     href="/terms-ar"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-purple-400 hover:text-purple-300 underline"
                   >
                     الشروط والأحكام
-                  </a>{" "}
+                  </Link>{" "}
                   وأوافق على معالجة بياناتي لأغراض المقابلة.
                 </>
               ) : (
                 <>
                   I accept the{" "}
-                  <a
+                  <Link
                     href="/terms-en"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-purple-400 hover:text-purple-300 underline"
                   >
                     Terms and Conditions
-                  </a>{" "}
+                  </Link>{" "}
                   and agree to the processing of my data for interview purposes.
                 </>
               )}

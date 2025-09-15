@@ -3,6 +3,7 @@
 import React from "react";
 import { useLanguage } from "@/hooks/useLanguage";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function FounderPage() {
   const { t, currentLang } = useLanguage();
@@ -177,7 +178,7 @@ export default function FounderPage() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
+              <Link
                 href="/upload-resume"
                 className="group inline-flex items-center justify-center px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-300 shadow-lg hover:shadow-purple-500/25 transform hover:-translate-y-1"
               >
@@ -197,9 +198,9 @@ export default function FounderPage() {
                 {currentLang === "ar"
                   ? "ابدأ المقابلة الآن"
                   : "Start Interview Now"}
-              </a>
+              </Link>
 
-              <a
+              <Link
                 href="/about"
                 className="group inline-flex items-center justify-center px-8 py-3 bg-transparent border-2 border-purple-500 text-purple-300 font-semibold rounded-lg hover:border-purple-400 hover:text-purple-200 hover:bg-purple-500/10 transition-all duration-300"
               >
@@ -217,7 +218,7 @@ export default function FounderPage() {
                   />
                 </svg>
                 {currentLang === "ar" ? "تعرف على المزيد" : "Learn More"}
-              </a>
+              </Link>
             </div>
           </div>
         </div>
