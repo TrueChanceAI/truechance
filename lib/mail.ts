@@ -40,13 +40,214 @@ export async function sendEmail(params: {
 }
 
 export async function sendOtpEmail(to: string, otp: string): Promise<void> {
-  const subject = "Verify your email";
+  const subject = "Verify your email - TrueChance";
   const html = `
-    <h2>Verify your email</h2>
-    <p>Your verification code is: <strong>${otp}</strong></p>
-    <p>This code will expire soon. If you didn't request this, please ignore this email.</p>
+    <!DOCTYPE html>
+    <html lang="en" dir="ltr">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Verify your email - TrueChance</title>
+      <style>
+        body { 
+          font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif; 
+          line-height: 1.6; 
+          color: #374151; 
+          margin: 0; 
+          padding: 0; 
+          background-color: #f9fafb;
+        }
+        .email-container { 
+          max-width: 500px; 
+          margin: 0 auto; 
+          background: #ffffff; 
+          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+          border-radius: 12px;
+          overflow: hidden;
+        }
+        .header { 
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+          padding: 40px 30px; 
+          text-align: center; 
+        }
+        .header h1 { 
+          color: white; 
+          margin: 0; 
+          font-size: 28px; 
+          font-weight: 700; 
+          text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header p { 
+          color: rgba(255,255,255,0.95); 
+          margin: 12px 0 0 0; 
+          font-size: 16px; 
+          font-weight: 400;
+        }
+        .content { 
+          padding: 40px 30px; 
+          text-align: center;
+        }
+        .otp-container {
+          background: #f8fafc;
+          border: 2px dashed #cbd5e1;
+          border-radius: 12px;
+          padding: 30px;
+          margin: 30px 0;
+        }
+        .otp-code {
+          font-size: 36px;
+          font-weight: 700;
+          color: #1e293b;
+          letter-spacing: 8px;
+          margin: 0;
+          font-family: 'Courier New', monospace;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+        .otp-label {
+          color: #64748b;
+          font-size: 14px;
+          font-weight: 500;
+          margin-bottom: 15px;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+        .instructions {
+          color: #475569;
+          font-size: 16px;
+          line-height: 1.6;
+          margin: 20px 0;
+        }
+        .warning {
+          background: #fef3c7;
+          border: 1px solid #f59e0b;
+          border-radius: 8px;
+          padding: 16px;
+          margin: 25px 0;
+          color: #92400e;
+          font-size: 14px;
+        }
+        .footer { 
+          background: #f8fafc; 
+          padding: 30px; 
+          text-align: center; 
+          color: #64748b; 
+          border-top: 1px solid #e2e8f0;
+        }
+        .logo { 
+          font-size: 24px; 
+          font-weight: 800; 
+          color: #667eea; 
+          margin-bottom: 8px; 
+          letter-spacing: -0.5px;
+        }
+        .website-link {
+          display: inline-block;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          padding: 12px 24px;
+          text-decoration: none;
+          border-radius: 8px;
+          font-weight: 600;
+          font-size: 14px;
+          margin-top: 20px;
+          transition: all 0.2s ease;
+        }
+        .website-link:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        .divider {
+          height: 1px;
+          background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+          margin: 25px 0;
+        }
+
+        @media only screen and (max-width: 600px) {
+          .content { padding: 30px 20px; }
+          .header { padding: 30px 20px; }
+          .header h1 { font-size: 24px; }
+          .otp-code { font-size: 28px; letter-spacing: 6px; }
+          .footer { padding: 25px 20px; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="email-container">
+        <div class="header">
+          <h1>🔐 Verify Your Email</h1>
+          <p>Complete your TrueChance account setup</p>
+        </div>
+        
+        <div class="content">
+          <p class="instructions">
+            Welcome to TrueChance! To complete your account setup and start your interview journey, please verify your email address using the code below:
+          </p>
+          
+          <div class="otp-container">
+            <div class="otp-label">Your Verification Code</div>
+            <div class="otp-code">${otp}</div>
+          </div>
+          
+          <div class="divider"></div>
+          
+          <p style="color: #64748b; font-size: 14px; margin: 0;">
+            Having trouble? You can also copy and paste this code: <strong>${otp}</strong>
+          </p>
+        </div>
+        
+        <div class="footer">
+          <div class="logo">TrueChance</div>
+          <p style="margin: 8px 0; font-weight: 500; color: #475569;">
+            Your gateway to successful interviews
+          </p>
+          <p style="margin: 20px 0 0 0; font-size: 12px; color: #9ca3af;">
+            This verification code was automatically generated for your account.<br>
+            For any questions, please contact our support team.
+          </p>
+          
+          <!-- Website Link -->
+          <div style="margin: 25px 0 0 0; padding: 20px; background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0;">
+            <p style="margin: 0 0 10px 0; font-size: 14px; font-weight: 600; color: #374151;">
+              🔗 Ready to get started?
+            </p>
+            <p style="margin: 0 0 15px 0; font-size: 13px; color: #6b7280;">
+              Once verified, you can access your account and start your interview journey:
+            </p>
+            <a href="https://www.true-chance.com" class="website-link">
+              Open TrueChance
+            </a>
+          </div>
+        </div>
+      </div>
+    </body>
+    </html>
   `;
-  const text = `Your verification code is: ${otp}. This code will expire soon.`;
+
+  const text = `
+TrueChance - Email Verification
+
+Welcome to TrueChance! 
+
+To complete your account setup, please use this verification code:
+
+${otp}
+
+Enter this code in the verification form to activate your account. This code will expire in 10 minutes.
+
+If you didn't request this verification code, please ignore this email.
+
+Ready to get started? Visit: https://www.true-chance.com
+
+Thank you for choosing TrueChance!
+Your gateway to successful interviews
+
+---
+This verification code was automatically generated for your account.
+For any questions, please contact our support team.
+  `;
 
   await sendEmail({ to, subject, html, text });
 }

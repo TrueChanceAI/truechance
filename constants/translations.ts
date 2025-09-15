@@ -13,6 +13,7 @@ export interface Translations {
   navigation: {
     home: string;
     aboutUs: string;
+    founder: string;
     language: string;
     signIn: string;
     menu: string;
@@ -148,6 +149,24 @@ export interface Translations {
       getInTouch: string;
     };
   };
+  founder: {
+    hero: {
+      title: string;
+      subtitle: string;
+    };
+    about: {
+      title: string;
+      content: string;
+    };
+    story: {
+      title: string;
+      content: string;
+    };
+    vision: {
+      title: string;
+      content: string;
+    };
+  };
   payment: {
     failed: {
       title: string;
@@ -199,6 +218,7 @@ export const translations: Record<string, Translations> = {
     navigation: {
       home: "Home",
       aboutUs: "About Us",
+      founder: "Founder's Message",
       language: "Language",
       signIn: "Sign In",
       menu: "Menu",
@@ -352,6 +372,27 @@ export const translations: Record<string, Translations> = {
         getInTouch: "Contact Us",
       },
     },
+    founder: {
+      hero: {
+        title: "Founder's Message",
+        subtitle: "A personal message from Ahmed Alghamdi",
+      },
+      about: {
+        title: "About Me",
+        content:
+          "I'm Ahmed Alghamdi, a talent acquisition and recruitment specialist with extensive experience in assessing competencies and conducting interviews. Over the course of my career, I've carried out more than 2,000 interviews, contributed to the hiring of over 300 candidates across various sectors, and reviewed more than 25,000 résumés.",
+      },
+      story: {
+        title: "The Story Behind True Chance",
+        content:
+          "Through this journey, I realized something important: there are truly outstanding, highly talented individuals whose value is undeniable and who went on to prove themselves after being hired. Yet, the shocking truth is that their résumés never reflected who they really are. They were noticed only by chance — when they got a rare interview or happened to cross paths with the right opportunity.\n\nAnd I kept asking myself: how many more gifted candidates are still lost among thousands of résumés that all look the same?",
+      },
+      vision: {
+        title: "Our Vision",
+        content:
+          "This question led me to create True Chance — a platform that allows candidates to express themselves freely. We listen, reorganize their story, and highlight their strengths exactly as they are. Because talent should never be buried… it deserves the opportunity it was made for.",
+      },
+    },
     payment: {
       failed: {
         title: "Payment Failed",
@@ -413,6 +454,7 @@ export const translations: Record<string, Translations> = {
     navigation: {
       home: "الرئيسية",
       aboutUs: "من نحن",
+      founder: "رسالة المؤسس",
       language: "اللغة",
       signIn: "تسجيل الدخول",
       menu: "القائمة",
@@ -563,6 +605,27 @@ export const translations: Record<string, Translations> = {
         title: "اتصل بنا",
         subtitle: "هل لديك أسئلة أو توصيات؟ نحن نحب أن نسمع منك!",
         getInTouch: "اتصل بنا",
+      },
+    },
+    founder: {
+      hero: {
+        title: "رسالة المؤسس",
+        subtitle: "رسالة شخصية من أحمد الغامدي",
+      },
+      about: {
+        title: "عني",
+        content:
+          "أنا أحمد الغامدي، مختص في استقطاب المواهب والتوظيف، بخبرة واسعة في تحليل الكفاءات وإجراء المقابلات. خلال مسيرتي المهنية أجريت أكثر من ٢٠٠٠ مقابلة شخصية، وساهمت في توظيف أكثر من ٣٠٠ مرشح في قطاعات مختلفة، واطلعت على ما يزيد عن ٢٥,٠٠٠ سيرة ذاتية",
+      },
+      story: {
+        title: "القصة وراء هذي المنصة",
+        content:
+          "ومن خلال شغلي لاحظت شي مهم… في ناس موهوبين جدًا وقيمتهم عالية، ولما أخذوا فرصتهم فعليًا أثبتوا نجاحهم بشكل كبير. بس الصادم إن سيرتهم الذاتية ما كانت تعبر عنهم نهائيًا، وما كان يبانوا إلا بالصدفة أو لو حضروا مقابلة شخصية نادرة.\n\nوهذا خلاني دايم أسأل نفسي: كم واحد زيهم ضاع وسط آلاف السير اللي كلها شكلها متشابه؟",
+      },
+      vision: {
+        title: "رؤيتنا",
+        content:
+          "ومن هنا طلعت فكرة ترو تشانس… منصة تخليك تعبر عن نفسك بوضوح، نسمعك، نعيد ترتيب قصتك، ونبرز قوتك زي ما هي. لأن الموهبة ما تنفع تندفن… لازم توصل للفرصة اللي تستاهلها",
       },
     },
     payment: {

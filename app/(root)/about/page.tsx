@@ -276,75 +276,6 @@ export default function AboutPage() {
         </div>
       </div>
 
-      {/* Team Section */}
-      <div className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
-              {t("about.team.title")}
-            </h2>
-            <p className="text-xl text-zinc-300 max-w-3xl mx-auto">
-              {t("about.team.subtitle")}
-            </p>
-          </div>
-
-          <div className="flex justify-center">
-            <div className="bg-gradient-to-br from-purple-900/20 to-blue-900/20 backdrop-blur-sm rounded-2xl p-10 border border-purple-500/30 max-w-3xl">
-              <div className="text-center mb-8">
-                <div className="w-24 h-24 bg-gradient-to-br from-purple-600 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <svg
-                    className="w-12 h-12 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    />
-                  </svg>
-                </div>
-                <h3 className="text-3xl font-bold text-white mb-3">
-                  Ahmed Alghamdi
-                </h3>
-                <p className="text-purple-400 font-medium text-xl mb-4">
-                  Founder & CEO
-                </p>
-                <p className="text-zinc-300 leading-relaxed text-lg max-w-2xl mx-auto">
-                  {currentLang === "ar"
-                    ? "مؤسس منصة TrueChance، متخصص في تطوير حلول تقنية مبتكرة للمقابلات الوظيفية."
-                    : "Founder of TrueChance, specializing in developing innovative technical solutions for job interviews."}
-                </p>
-              </div>
-
-              <div className="border-t border-purple-500/30 pt-6">
-                <div className="flex items-center justify-center space-x-4 rtl:space-x-reverse">
-                  <svg
-                    className="w-5 h-5 text-purple-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                    />
-                  </svg>
-
-                  <span className="text-zinc-300 text-lg">
-                    truechanceksa@gmail.com
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Contact Section */}
       <div className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
@@ -356,25 +287,47 @@ export default function AboutPage() {
               {t("about.contact.subtitle")}
             </p>
 
-            <a
-              href="mailto:truechanceksa@gmail.com?subject=Contact from TrueChance About Page"
-              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-medium rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200 cursor-pointer"
-            >
-              <svg
-                className="w-5 h-5 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <a
+                href="/founder"
+                className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-medium rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200 cursor-pointer"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                />
-              </svg>
-              {t("about.contact.getInTouch")}
-            </a>
+                <svg
+                  className="w-5 h-5 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
+                </svg>
+                {t("navigation.founder")}
+              </a>
+
+              <a
+                href="mailto:truechanceksa@gmail.com?subject=Contact from TrueChance About Page"
+                className="inline-flex items-center px-6 py-3 bg-transparent border-2 border-purple-500 text-purple-300 font-medium rounded-lg hover:border-purple-400 hover:text-purple-200 hover:bg-purple-500/10 transition-all duration-200 cursor-pointer"
+              >
+                <svg
+                  className="w-5 h-5 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                  />
+                </svg>
+                {t("about.contact.getInTouch")}
+              </a>
+            </div>
           </div>
         </div>
       </div>
