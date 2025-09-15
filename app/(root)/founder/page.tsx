@@ -7,22 +7,14 @@ import Link from "next/link";
 
 export default function FounderPage() {
   const { t, currentLang } = useLanguage();
-  const subtitle = t("founder.hero.subtitle");
 
   return (
     <div className="min-h-screen bg-transparent">
       {/* Hero Section */}
       <div className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-gradient-to-br from-slate-900/20 to-slate-800/20 backdrop-blur-xl rounded-2xl p-8 sm:p-12 border border-slate-700/10 shadow-lg text-center">
-            {subtitle ? (
-              <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20 text-purple-300 text-sm font-medium mb-6">
-                <div className="w-2 h-2 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full mr-3"></div>
-                {subtitle}
-              </div>
-            ) : null}
-
-            <h1 className="text-4xl sm:text-5xl font-bold mb-6 bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent">
+          <div className="bg-gradient-to-br from-slate-900/20 to-slate-800/20 backdrop-blur-xl rounded-2xl p-8 sm:p-12 border border-slate-700/10 shadow-lg text-center overflow-visible">
+            <h1 className="text-4xl sm:text-5xl font-bold mb-6 bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent leading-[1.15] pb-1">
               {t("founder.hero.title")}
             </h1>
 
