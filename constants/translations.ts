@@ -166,6 +166,13 @@ export interface Translations {
       title: string;
       content: string;
     };
+    stats: {
+      interviews: string;
+      hired: string;
+      resumes: string;
+    };
+    readFullStory: string;
+    connectLinkedIn: string;
   };
   payment: {
     failed: {
@@ -392,6 +399,13 @@ export const translations: Record<string, Translations> = {
         content:
           "This question led me to create True Chance — a platform that allows candidates to express themselves freely. We listen, reorganize their story, and highlight their strengths exactly as they are. Because talent should never be buried… it deserves the opportunity it was made for.",
       },
+      stats: {
+        interviews: "Interviews",
+        hired: "Hired",
+        resumes: "Resumes",
+      },
+      readFullStory: "Read Full Story",
+      connectLinkedIn: "Connect on LinkedIn",
     },
     payment: {
       failed: {
@@ -627,6 +641,13 @@ export const translations: Record<string, Translations> = {
         content:
           "ومن هنا طلعت فكرة ترو تشانس… منصة تخليك تعبر عن نفسك بوضوح، نسمعك، نعيد ترتيب قصتك، ونبرز قوتك زي ما هي. لأن الموهبة ما تنفع تندفن… لازم توصل للفرصة اللي تستاهلها",
       },
+      stats: {
+        interviews: "مقابلة",
+        hired: "توظيف",
+        resumes: "سيرة ذاتية",
+      },
+      readFullStory: "اقرأ القصة كاملة",
+      connectLinkedIn: "تواصل على LinkedIn",
     },
     payment: {
       failed: {
