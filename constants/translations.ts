@@ -392,7 +392,7 @@ export const translations: Record<string, Translations> = {
       story: {
         title: "The Story Behind True Chance",
         content:
-          "Through this journey, I realized something important: there are truly outstanding, highly talented individuals whose value is undeniable and who went on to prove themselves after being hired. Yet, the shocking truth is that their résumés never reflected who they really are. They were noticed only by chance — when they got a rare interview or happened to cross paths with the right opportunity.\n\nAnd I kept asking myself: how many more gifted candidates are still lost among thousands of résumés that all look the same?",
+          "During my career in recruitment, I came across moments I’ll never forget.\n\nI met candidates with extraordinary talent — people of incredible value who, once given the chance, proved themselves and created real impact in the companies they joined.\n\nBut here’s the shocking part: their résumés never reflected who they truly were.\n\nOn paper, they looked ordinary. Their skills and personality were invisible — and the only time they were noticed was by pure chance, or if they happened to land a rare interview.\n\nThat left me with a question that never stopped haunting me:\n\nHow many other brilliant candidates are still lost among thousands of résumés that all look the same?",
       },
       vision: {
         title: "Our Vision",
@@ -634,7 +634,7 @@ export const translations: Record<string, Translations> = {
       story: {
         title: "القصة وراء هذي المنصة",
         content:
-          "ومن خلال شغلي لاحظت شي مهم… في ناس موهوبين جدًا وقيمتهم عالية، ولما أخذوا فرصتهم فعليًا أثبتوا نجاحهم بشكل كبير. بس الصادم إن سيرتهم الذاتية ما كانت تعبر عنهم نهائيًا، وما كان يبانوا إلا بالصدفة أو لو حضروا مقابلة شخصية نادرة.\n\nوهذا خلاني دايم أسأل نفسي: كم واحد زيهم ضاع وسط آلاف السير اللي كلها شكلها متشابه؟",
+          "خلال عملي في التوظيف، واجهت مواقف ما أنساها.\n\nشفت مرشحين موهوبين لدرجة مدهشة… ناس قيمتهم عالية جدًا، ولما أخذوا فرصتهم أثبتوا نجاح باهر، وغيّروا حتى مسار الشركات اللي انضموا لها.\n\nلكن الي لاحظته ان سيرهم الذاتية ما كانت تعكس ربع قدراتهم.\n\nكانت مجرد ورقة ما تعبر عن شخصياتهم ولا مهاراتهم ولا عقلياتهم، وما كان يُكتشفوا إلا بالصدفة… أو إذا حالفهم الحظ وجاتهم فرصه في مقابلة شخصية نادرة.\n\nومن هنا بدأ السؤال يطاردني:\n\nكم شخص موهوب فعلاً، وضاعت فرصته لأنه كان مجرد سطر وسط آلاف السير المتشابهة؟",
       },
       vision: {
         title: "رؤيتنا",

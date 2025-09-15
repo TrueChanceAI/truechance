@@ -105,10 +105,10 @@ function HomeContent() {
       <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 sm:mt-20">
         <div className="bg-gradient-to-br from-slate-900/20 to-slate-800/20 backdrop-blur-xl rounded-3xl p-6 sm:p-8 border border-slate-700/20 shadow-xl">
           <div className="text-center mb-6">
-            <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20 text-purple-300 text-sm font-medium mb-6">
+            {/* <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20 text-purple-300 text-sm font-medium mb-6">
               <div className="w-2 h-2 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full mr-3"></div>
               {t("founder.hero.subtitle")}
-            </div>
+            </div> */}
 
             <h2 className="text-3xl sm:text-4xl font-bold mb-4 bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent">
               {t("founder.hero.title")}
